@@ -1,0 +1,361 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//
+// ENUMS
+//
+
+enum Role {
+  ADMIN
+  BASE_COMMANDER
+  LOGISTICS_OFFICER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  DEACTIVATED
+}
+
+enum EquipmentCategory {
+  WEAPON
+  VEHICLE
+  AMMUNITION
+  COMMUNICATION
+  MEDICAL
+  OTHER
+}
+
+enum Unit {
+  NOS
+  ROUNDS
+  BOXES
+  LITRES
+  KGS
+  METRES
+}
+
+enum MovementType {
+  INITIAL_STOCK
+  PURCHASE
+  TRANSFER_IN
+  TRANSFER_OUT
+  ASSIGNMENT
+  ASSIGNMENT_RETURN
+  EXPENDITURE
+}
+
+enum ReferenceType {
+  INITIAL_STOCK
+  PURCHASE
+  TRANSFER
+  ASSIGNMENT
+  ASSIGNMENT_RETURN
+  EXPENDITURE
+}
+
+enum TransferStatus {
+  PENDING
+  SHIPPED
+  RECEIVED
+  CANCELLED
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  RETURNED
+  PARTIALLY_RETURNED
+  LOST
+  DAMAGED
+}
+
+//
+// MODELS
+//
+
+model Base {
+  id       String @id @default(cuid())
+  name     String @unique
+  location String
+
+  users         User[]
+  inventories   Inventory[]
+  ledgers       Ledger[]
+
+  purchases     Purchase[]
+  assignments   Assignment[]
+  expenditures  Expenditure[]
+
+  outgoingTransfers Transfer[] @relation("FromBase")
+  incomingTransfers Transfer[] @relation("ToBase")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id       String @id @default(cuid())
+
+  name     String
+  email    String @unique
+  password String
+
+  role   Role
+  status UserStatus @default(ACTIVE)
+
+  baseId String?
+  base   Base? @relation(fields: [baseId], references: [id])
+
+  ledgers  Ledger[]
+  auditLogs AuditLog[]
+
+  purchases    Purchase[]
+  transfers    Transfer[]
+  assignments  Assignment[]
+  expenditures Expenditure[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([baseId])
+}
+
+model Equipment {
+  id          String @id @default(cuid())
+  name        String @unique
+  category    EquipmentCategory
+  unit        Unit
+  description String?
+
+  inventories Inventory[]
+  ledgers     Ledger[]
+
+  purchases    Purchase[]
+  transfers    Transfer[]
+  assignments  Assignment[]
+  expenditures Expenditure[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
+
+model Inventory {
+  id String @id @default(cuid())
+
+  baseId String
+  base Base @relation(fields: [baseId], references: [id])
+
+  equipmentId String
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+
+  quantity Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([baseId, equipmentId])
+
+  @@index([equipmentId])
+}
+
+model Purchase {
+  id String @id @default(cuid())
+
+  baseId String
+  base Base @relation(fields: [baseId], references: [id])
+
+  equipmentId String
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+
+  quantity Int
+
+  vendor String?
+
+  purchasedById String
+  purchasedBy User @relation(fields: [purchasedById], references: [id])
+
+  remarks String?
+
+  ledgers Ledger[]
+
+  purchasedAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([baseId])
+  @@index([equipmentId])
+  @@index([purchasedAt])
+  @@index([purchasedById])
+}
+
+model Transfer {
+  id String @id @default(cuid())
+
+  equipmentId String
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+
+  fromBaseId String
+  fromBase Base @relation("FromBase", fields: [fromBaseId], references: [id])
+
+  toBaseId String
+  toBase Base @relation("ToBase", fields: [toBaseId], references: [id])
+
+  quantity Int
+
+  transferredById String
+  transferredBy User @relation(fields: [transferredById], references: [id])
+
+  remarks String?
+  status  TransferStatus @default(PENDING)
+
+  ledgers Ledger[]
+
+  transferredAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([fromBaseId])
+  @@index([toBaseId])
+  @@index([equipmentId])
+  @@index([transferredById])
+}
+
+model Assignment {
+  id String @id @default(cuid())
+
+  baseId String
+  base Base @relation(fields: [baseId], references: [id])
+
+  equipmentId String
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+
+  assignedTo String
+
+  quantity         Int
+  returnedQuantity Int @default(0)
+  status           AssignmentStatus @default(ACTIVE)
+
+  assignedById String
+  assignedBy User @relation(fields: [assignedById], references: [id])
+
+  remarks String?
+
+  ledgers Ledger[]
+
+  assignedAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([baseId])
+  @@index([equipmentId])
+  @@index([assignedById])
+}
+
+model Expenditure {
+  id String @id @default(cuid())
+
+  baseId String
+  base Base @relation(fields: [baseId], references: [id])
+
+  equipmentId String
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+
+  quantity Int
+
+  reason String
+
+  expendedById String
+  expendedBy User @relation(fields: [expendedById], references: [id])
+
+  remarks String?
+
+  ledgers Ledger[]
+
+  expendedAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([baseId])
+  @@index([equipmentId])
+  @@index([expendedById])
+}
+
+model Ledger {
+  id String @id @default(cuid())
+
+  baseId String
+  base Base @relation(fields: [baseId], references: [id])
+
+  equipmentId String
+  equipment Equipment @relation(fields: [equipmentId], references: [id])
+
+  movementType MovementType
+
+  quantity Int
+
+  referenceType ReferenceType
+
+  purchaseId String?
+  purchase   Purchase? @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
+
+  transferId String?
+  transfer   Transfer? @relation(fields: [transferId], references: [id], onDelete: Restrict)
+
+  assignmentId String?
+  assignment   Assignment? @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+
+  expenditureId String?
+  expenditure   Expenditure? @relation(fields: [expenditureId], references: [id], onDelete: Restrict)
+
+  createdById String
+  createdBy User @relation(fields: [createdById], references: [id])
+
+  remarks String?
+
+  createdAt DateTime @default(now())
+
+  @@index([baseId])
+  @@index([equipmentId])
+  @@index([movementType])
+  @@index([createdAt])
+  @@index([baseId, equipmentId, createdAt])
+  @@index([baseId, createdAt])
+  @@index([purchaseId])
+  @@index([transferId])
+  @@index([assignmentId])
+  @@index([expenditureId])
+  @@index([createdById])
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id])
+
+  action String
+
+  tableName String
+
+  recordId String
+
+  ipAddress String?
+  details   Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
