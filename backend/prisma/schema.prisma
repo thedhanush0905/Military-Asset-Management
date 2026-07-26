@@ -81,8 +81,10 @@ enum AssignmentStatus {
 
 model Base {
   id       String @id @default(cuid())
-  name     String @unique
+  code     String @unique
+  name     String
   location String
+  isActive Boolean @default(true)
 
   users         User[]
   inventories   Inventory[]

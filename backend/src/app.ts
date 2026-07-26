@@ -9,6 +9,7 @@ import HttpStatus = require("./constants/httpStatus.js");
 import Messages = require("./constants/messages.js");
 import authRoutes = require("./modules/auth/auth.routes.js");
 import userRoutes = require("./modules/user/user.routes.js");
+import baseRoutes = require("./modules/base/base.routes.js");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
+app.use("/bases", baseRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
