@@ -11,8 +11,8 @@ const errorHandler = (
   res: express.Response,
   _next: express.NextFunction
 ): void => {
-  const isProduction = process.env["NODE_ENV"] === "production";
-  const stack = isProduction ? undefined : err.stack;
+  const isDevelopment = process.env["NODE_ENV"] === "development";
+  const stack = isDevelopment ? err.stack : undefined;
 
   if (err instanceof ValidationError) {
     apiResponse.validationResponse({

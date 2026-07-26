@@ -7,6 +7,8 @@ import errorHandler = require("./middleware/error.middleware.js");
 import apiResponse = require("./shared/responses/apiResponse.js");
 import HttpStatus = require("./constants/httpStatus.js");
 import Messages = require("./constants/messages.js");
+import authRoutes = require("./modules/auth/auth.routes.js");
+import userRoutes = require("./modules/user/user.routes.js");
 
 const app = express();
 
@@ -26,6 +28,9 @@ app.get("/health", (_req, res) => {
     message: Messages.SERVER_RUNNING,
   });
 });
+
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
