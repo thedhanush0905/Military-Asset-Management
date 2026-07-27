@@ -16,6 +16,9 @@ import inventoryRoutes = require("./modules/inventory/inventory.routes.js");
 import assignmentRoutes = require("./modules/assignment/assignment.routes.js");
 import transferRoutes = require("./modules/transfer/transfer.routes.js");
 import movementRoutes = require("./modules/movement/movement.routes.js");
+import maintenanceRoutes = require("./modules/maintenance/maintenance.routes.js");
+import procurementRoutes = require("./modules/procurement/procurement.routes.js");
+import disposalRoutes = require("./modules/disposal/disposal.routes.js");
 
 const app = express();
 
@@ -45,6 +48,9 @@ app.use("/inventory", inventoryRoutes);
 app.use("/assignments", assignmentRoutes);
 app.use("/transfers", transferRoutes);
 app.use("/movements", movementRoutes);
+app.use("/maintenance", maintenanceRoutes);
+app.use("/procurements", procurementRoutes);
+app.use("/disposals", disposalRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

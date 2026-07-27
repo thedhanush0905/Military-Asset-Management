@@ -128,6 +128,7 @@ model Base {
   ledgers           Ledger[]
   outgoingMovements MovementHistory[] @relation("SourceMovements")
   incomingMovements MovementHistory[] @relation("DestinationMovements")
+  procurements      Procurement[]
 
   purchases     Purchase[]
   assignments   Assignment[]
@@ -156,12 +157,17 @@ model User {
   ledgers  Ledger[]
   auditLogs AuditLog[]
 
-  purchases           Purchase[]
-  transfers           Transfer[]
-  assignments         Assignment[]
-  returnedAssignments Assignment[]      @relation("ReturnedAssignments")
-  expenditures        Expenditure[]
-  movements           MovementHistory[]
+  purchases             Purchase[]
+  transfers             Transfer[]
+  assignments           Assignment[]
+  returnedAssignments   Assignment[]      @relation("ReturnedAssignments")
+  expenditures          Expenditure[]
+  movements             MovementHistory[]
+  createdMaintenances   Maintenance[]     @relation("CreatedMaintenance")
+  completedMaintenances Maintenance[]     @relation("CompletedMaintenance")
+  procurements          Procurement[]
+  approvedDisposals     Disposal[]        @relation("ApprovedDisposals")
+  performedDisposals    Disposal[]        @relation("DisposedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -185,6 +191,7 @@ model Equipment {
   inventories Inventory[]
 
   purchases    Purchase[]
+  procurementItems ProcurementItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -214,6 +221,8 @@ model EquipmentAsset {
   expenditures Expenditure[]
   ledgers      Ledger[]
   movements    MovementHistory[]
+  maintenances Maintenance[]
+  disposals    Disposal[]
 
   @@index([equipmentId])
   @@index([baseId])
@@ -470,4 +479,133 @@ model MovementHistory {
   @@index([referenceType, referenceId])
   @@index([equipmentAssetId, createdAt])
   @@index([createdAt])
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+  INSPECTION
+  CALIBRATION
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ProcurementStatus {
+  DRAFT
+  APPROVED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CANCELLED
+}
+
+enum DisposalReason {
+  RETIRED
+  DAMAGED
+  LOST
+  DESTROYED
+  SOLD
+  SCRAPPED
+}
+
+enum DisposalStatus {
+  PENDING
+  APPROVED
+  COMPLETED
+  CANCELLED
+}
+
+model Maintenance {
+  id                     String            @id @default(cuid())
+  equipmentAssetId       String
+  equipmentAsset         EquipmentAsset    @relation(fields: [equipmentAssetId], references: [id])
+  maintenanceType        MaintenanceType
+  status                 MaintenanceStatus @default(SCHEDULED)
+  description            String
+  scheduledDate          DateTime
+  expectedCompletionDate DateTime?
+  startedAt              DateTime?
+  completedAt            DateTime?
+  vendorName             String?
+  technicianName         String?
+  estimatedCost          Decimal?
+  actualCost             Decimal?
+  remarks                String?
+  createdById            String
+  createdBy              User              @relation("CreatedMaintenance", fields: [createdById], references: [id])
+  completedById          String?
+  completedBy            User?             @relation("CompletedMaintenance", fields: [completedById], references: [id])
+  isActive               Boolean           @default(true)
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  @@index([equipmentAssetId])
+  @@index([status])
+  @@index([maintenanceType])
+  @@index([createdById])
+  @@index([completedById])
+  @@index([isActive])
+}
+
+model Procurement {
+  id                   String            @id @default(cuid())
+  procurementNumber    String            @unique
+  supplier             String
+  status               ProcurementStatus @default(DRAFT)
+  purchaseDate         DateTime
+  expectedDeliveryDate DateTime
+  receivedDate         DateTime?
+  totalCost            Decimal           @default(0)
+  remarks              String?
+  baseId               String
+  base                 Base              @relation(fields: [baseId], references: [id])
+  createdById          String
+  createdBy            User              @relation(fields: [createdById], references: [id])
+  items                ProcurementItem[]
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@index([baseId])
+  @@index([status])
+}
+
+model ProcurementItem {
+  id               String      @id @default(cuid())
+  procurementId    String
+  procurement      Procurement @relation(fields: [procurementId], references: [id], onDelete: Cascade)
+  equipmentId      String
+  equipment        Equipment   @relation(fields: [equipmentId], references: [id])
+  quantity         Int
+  receivedQuantity Int         @default(0)
+  unitCost         Decimal
+
+  @@index([procurementId])
+  @@index([equipmentId])
+}
+
+model Disposal {
+  id               String         @id @default(cuid())
+  equipmentAssetId String
+  equipmentAsset   EquipmentAsset @relation(fields: [equipmentAssetId], references: [id])
+  disposalReason   DisposalReason
+  status           DisposalStatus @default(PENDING)
+  remarks          String?
+  approvedById     String?
+  approvedBy       User?          @relation("ApprovedDisposals", fields: [approvedById], references: [id])
+  disposedById     String?
+  disposedBy       User?          @relation("DisposedBy", fields: [disposedById], references: [id])
+  disposalDate     DateTime?
+  bookValue        Decimal?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([equipmentAssetId])
+  @@index([status])
+  @@index([disposalReason])
+  @@index([approvedById])
+  @@index([disposedById])
 }
