@@ -8,6 +8,8 @@ import ConflictError = require("../../shared/errors/ConflictError.js");
 import type maintenanceTypes = require("./maintenance.types.js");
 import statusTransitions = require("../../shared/utils/statusTransitions.js");
 import orchestrator = require("../../shared/utils/transactionOrchestration.js");
+import AuditService = require("../../shared/services/audit.service.js");
+import NotificationService = require("../../shared/services/notification.service.js");
 
 class MaintenanceService {
   private readonly maintenanceRepository: MaintenanceRepository;
@@ -100,6 +102,27 @@ class MaintenanceService {
     });
 
     const populated = await this.maintenanceRepository.findById(created.id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "MAINTENANCE",
+      action: "MAINTENANCE_SCHEDULE",
+      entityType: "Maintenance",
+      entityId: created.id,
+      newValues: { equipmentAssetId: created.equipmentAssetId, maintenanceType: created.maintenanceType, scheduledDate: created.scheduledDate, expectedCompletionDate: created.expectedCompletionDate },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: "Maintenance Scheduled",
+      message: `Maintenance of type ${created.maintenanceType} has been scheduled for asset ${(populated as any)?.equipmentAsset?.serialNumber}.`,
+      type: "MAINTENANCE",
+      priority: "MEDIUM",
+      actionUrl: `/maintenance/${created.id}`,
+      expiresAt: created.expectedCompletionDate,
+    });
+
     return this.sanitizeMaintenance(populated!);
   }
 
@@ -160,6 +183,27 @@ class MaintenanceService {
     });
 
     const updated = await this.maintenanceRepository.findById(id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "MAINTENANCE",
+      action: "MAINTENANCE_START",
+      entityType: "Maintenance",
+      entityId: id,
+      oldValues: { status: "SCHEDULED" },
+      newValues: { status: "IN_PROGRESS" },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: "Maintenance Started",
+      message: `Maintenance workflow has been started for asset ${(updated as any)?.equipmentAsset?.serialNumber}.`,
+      type: "MAINTENANCE",
+      priority: "MEDIUM",
+      actionUrl: `/maintenance/${id}`,
+    });
+
     return this.sanitizeMaintenance(updated!);
   }
 
@@ -220,6 +264,28 @@ class MaintenanceService {
     });
 
     const updated = await this.maintenanceRepository.findById(id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "MAINTENANCE",
+      action: "MAINTENANCE_COMPLETE",
+      entityType: "Maintenance",
+      entityId: id,
+      oldValues: { status: "IN_PROGRESS" },
+      newValues: { status: "COMPLETED", actualCost: updated?.actualCost?.toString() },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: "Maintenance Completed",
+      message: `Maintenance workflow has been completed for asset ${(updated as any)?.equipmentAsset?.serialNumber}.`,
+      type: "MAINTENANCE",
+      priority: "LOW",
+      actionUrl: `/maintenance/${id}`,
+      expiresAt: new Date(), // Immediate expiration of completed alerts
+    });
+
     return this.sanitizeMaintenance(updated!);
   }
 
@@ -252,6 +318,27 @@ class MaintenanceService {
     const updated = await this.maintenanceRepository.update(id, {
       status: "CANCELLED",
       remarks: body.remarks ? body.remarks.trim() : record.remarks,
+    });
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "MAINTENANCE",
+      action: "MAINTENANCE_CANCEL",
+      entityType: "Maintenance",
+      entityId: id,
+      oldValues: { status: "SCHEDULED" },
+      newValues: { status: "CANCELLED" },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: "Maintenance Cancelled",
+      message: `Scheduled maintenance request ${id} has been cancelled.`,
+      type: "MAINTENANCE",
+      priority: "LOW",
+      actionUrl: `/maintenance/${id}`,
+      expiresAt: new Date(),
     });
 
     const populated = await this.maintenanceRepository.findById(updated.id);

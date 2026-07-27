@@ -154,8 +154,9 @@ model User {
   baseId String?
   base   Base? @relation(fields: [baseId], references: [id])
 
-  ledgers  Ledger[]
-  auditLogs AuditLog[]
+  ledgers       Ledger[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
 
   purchases             Purchase[]
   transfers             Transfer[]
@@ -435,23 +436,25 @@ model Ledger {
 }
 
 model AuditLog {
-  id String @id @default(cuid())
-
-  userId String
-  user User @relation(fields: [userId], references: [id])
-
-  action String
-
-  tableName String
-
-  recordId String
-
-  ipAddress String?
-  details   Json?
-
-  createdAt DateTime @default(now())
+  id              String          @id @default(cuid())
+  userId          String?
+  user            User?           @relation(fields: [userId], references: [id])
+  performedByType PerformedByType @default(USER)
+  module          String
+  action          String
+  entityType      String
+  entityId        String
+  result          AuditResult     @default(SUCCESS)
+  oldValues       Json?
+  newValues       Json?
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime        @default(now())
 
   @@index([userId])
+  @@index([module])
+  @@index([action])
+  @@index([entityType])
   @@index([createdAt])
 }
 
@@ -608,4 +611,51 @@ model Disposal {
   @@index([disposalReason])
   @@index([approvedById])
   @@index([disposedById])
+}
+
+enum PerformedByType {
+  USER
+  SYSTEM
+}
+
+enum AuditResult {
+  SUCCESS
+  FAILURE
+}
+
+enum NotificationType {
+  MAINTENANCE
+  PROCUREMENT
+  TRANSFER
+  ASSIGNMENT
+  DISPOSAL
+  SYSTEM
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Notification {
+  id        String               @id @default(cuid())
+  userId    String?
+  user      User?                @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      NotificationType
+  priority  NotificationPriority @default(LOW)
+  isRead    Boolean              @default(false)
+  actionUrl String?
+  metadata  Json?
+  createdAt DateTime             @default(now())
+  readAt    DateTime?
+  expiresAt DateTime?
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([type])
+  @@index([createdAt])
 }

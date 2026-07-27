@@ -4,6 +4,8 @@ import ValidationError = require("../../shared/errors/ValidationError.js");
 import NotFoundError = require("../../shared/errors/NotFoundError.js");
 import ConflictError = require("../../shared/errors/ConflictError.js");
 import type equipmentTypes = require("./equipment.types.js");
+import AuditService = require("../../shared/services/audit.service.js");
+import NotificationService = require("../../shared/services/notification.service.js");
 
 const categoryValues: prismaClientModule.EquipmentCategory[] = [
   "WEAPON",
@@ -56,7 +58,23 @@ class EquipmentService {
       isActive: true,
     });
 
-    // TODO: Trigger Audit Log hook here (auditLogService.logAction(...))
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "EQUIPMENT",
+      action: "EQUIPMENT_CREATE",
+      entityType: "Equipment",
+      entityId: created.id,
+      newValues: { name: created.name, category: created.category, unit: created.unit, manufacturer: created.manufacturer, model: created.model },
+    });
+
+    await NotificationService.createNotification({
+      userId: null,
+      title: "New Equipment Catalog Added",
+      message: `Equipment ${created.name} (${created.category}) was added to catalog by ${currentUser.name}.`,
+      type: "SYSTEM",
+      priority: "LOW",
+    });
 
     return this.sanitizeEquipment(created);
   }

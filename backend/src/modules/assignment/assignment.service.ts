@@ -8,6 +8,8 @@ import ConflictError = require("../../shared/errors/ConflictError.js");
 import type assignmentTypes = require("./assignment.types.js");
 import statusTransitions = require("../../shared/utils/statusTransitions.js");
 import orchestrator = require("../../shared/utils/transactionOrchestration.js");
+import AuditService = require("../../shared/services/audit.service.js");
+import NotificationService = require("../../shared/services/notification.service.js");
 
 class AssignmentService {
   private readonly assignmentRepository: AssignmentRepository;
@@ -133,6 +135,25 @@ class AssignmentService {
       throw new NotFoundError("Assignment record not created successfully");
     }
 
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "ASSIGNMENT",
+      action: "ASSIGNMENT_CREATE",
+      entityType: "Assignment",
+      entityId: assignment.id,
+      newValues: { baseId: assignment.baseId, equipmentAssetId: assignment.equipmentAssetId, assignedTo: assignment.assignedTo },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: "Asset Checked Out",
+      message: `Asset ${(assignment as any).equipmentAsset?.serialNumber} has been assigned to ${assignment.assignedTo}.`,
+      type: "ASSIGNMENT",
+      priority: "MEDIUM",
+      actionUrl: `/assignments/${assignment.id}`,
+    });
+
     return this.sanitizeAssignment(assignment);
   }
 
@@ -187,6 +208,27 @@ class AssignmentService {
     });
 
     const updated = await this.assignmentRepository.findById(id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "ASSIGNMENT",
+      action: "ASSIGNMENT_RETURN",
+      entityType: "Assignment",
+      entityId: id,
+      oldValues: { status: "ACTIVE" },
+      newValues: { status: "RETURNED", returnedById: currentUser.id },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: "Asset Returned",
+      message: `Asset ${(updated as any)?.equipmentAsset?.serialNumber} has been returned.`,
+      type: "ASSIGNMENT",
+      priority: "LOW",
+      actionUrl: `/assignments/${id}`,
+    });
+
     return this.sanitizeAssignment(updated!);
   }
 

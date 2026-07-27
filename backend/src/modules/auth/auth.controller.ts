@@ -17,7 +17,7 @@ class AuthController {
   ): Promise<void> => {
     try {
       const { email, password } = req.body;
-      const data = await this.authService.login(email, password);
+      const data = await this.authService.login(email, password, req.ip, req.headers["user-agent"] as string);
 
       apiResponse.successResponse({
         res,

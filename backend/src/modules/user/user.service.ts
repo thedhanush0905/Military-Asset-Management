@@ -6,6 +6,8 @@ import ValidationError = require("../../shared/errors/ValidationError.js");
 import NotFoundError = require("../../shared/errors/NotFoundError.js");
 import ForbiddenError = require("../../shared/errors/ForbiddenError.js");
 import prismaClientModule = require("../../../generated/prisma/index.js");
+import AuditService = require("../../shared/services/audit.service.js");
+import NotificationService = require("../../shared/services/notification.service.js");
 
 interface SafeUser {
   id: string;
@@ -78,6 +80,24 @@ class UserService {
       role: data.role,
       baseId: finalBaseId,
       status: "ACTIVE",
+    });
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "USER",
+      action: "USER_CREATE",
+      entityType: "User",
+      entityId: created.id,
+      newValues: { name: created.name, email: created.email, role: created.role, baseId: created.baseId },
+    });
+
+    await NotificationService.createNotification({
+      userId: null,
+      title: "New User Registered",
+      message: `User ${created.name} (${created.role}) has been created by ${currentUser.name}.`,
+      type: "SYSTEM",
+      priority: "MEDIUM",
     });
 
     return this.sanitizeUser(created);
@@ -194,6 +214,26 @@ class UserService {
     }
 
     const updated = await this.userRepository.updateUser(id, updatedData);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "USER",
+      action: "USER_UPDATE",
+      entityType: "User",
+      entityId: updated.id,
+      oldValues: { name: targetUser.name, email: targetUser.email, role: targetUser.role, baseId: targetUser.baseId, status: targetUser.status },
+      newValues: { name: updated.name, email: updated.email, role: updated.role, baseId: updated.baseId, status: updated.status },
+    });
+
+    await NotificationService.createNotification({
+      userId: updated.id,
+      title: "Profile Updated",
+      message: `Your user details have been updated by ${currentUser.name}.`,
+      type: "SYSTEM",
+      priority: "LOW",
+    });
+
     return this.sanitizeUser(updated);
   }
 
@@ -220,6 +260,26 @@ class UserService {
     const updated = await this.userRepository.updateUser(id, {
       status: "DEACTIVATED",
     });
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "USER",
+      action: "USER_DEACTIVATE",
+      entityType: "User",
+      entityId: updated.id,
+      oldValues: { status: targetUser.status },
+      newValues: { status: "DEACTIVATED" },
+    });
+
+    await NotificationService.createNotification({
+      userId: updated.id,
+      title: "Account Deactivated",
+      message: "Your account privilege has been deactivated.",
+      type: "SYSTEM",
+      priority: "HIGH",
+    });
+
     return this.sanitizeUser(updated);
   }
 }

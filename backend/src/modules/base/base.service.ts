@@ -5,6 +5,8 @@ import NotFoundError = require("../../shared/errors/NotFoundError.js");
 import ForbiddenError = require("../../shared/errors/ForbiddenError.js");
 import ConflictError = require("../../shared/errors/ConflictError.js");
 import type baseTypes = require("./base.types.js");
+import AuditService = require("../../shared/services/audit.service.js");
+import NotificationService = require("../../shared/services/notification.service.js");
 
 class BaseService {
   private readonly baseRepository: BaseRepository;
@@ -51,6 +53,24 @@ class BaseService {
       name,
       location,
       isActive: true,
+    });
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "BASE",
+      action: "BASE_CREATE",
+      entityType: "Base",
+      entityId: created.id,
+      newValues: { code: created.code, name: created.name, location: created.location },
+    });
+
+    await NotificationService.createNotification({
+      userId: null, // Broadcast to all
+      title: "New Base Registered",
+      message: `Military Base ${created.name} (${created.code}) has been registered by ${currentUser.name}.`,
+      type: "SYSTEM",
+      priority: "MEDIUM",
     });
 
     return this.sanitizeBase(created);

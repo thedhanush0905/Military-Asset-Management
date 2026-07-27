@@ -19,6 +19,9 @@ import movementRoutes = require("./modules/movement/movement.routes.js");
 import maintenanceRoutes = require("./modules/maintenance/maintenance.routes.js");
 import procurementRoutes = require("./modules/procurement/procurement.routes.js");
 import disposalRoutes = require("./modules/disposal/disposal.routes.js");
+import dashboardRoutes = require("./modules/dashboard/dashboard.routes.js");
+import auditLogRoutes = require("./modules/audit-log/audit-log.routes.js");
+import notificationRoutes = require("./modules/notification/notification.routes.js");
 
 const app = express();
 
@@ -51,6 +54,9 @@ app.use("/movements", movementRoutes);
 app.use("/maintenance", maintenanceRoutes);
 app.use("/procurements", procurementRoutes);
 app.use("/disposals", disposalRoutes);
+app.use("/dashboard", dashboardRoutes);
+app.use("/audit-logs", auditLogRoutes);
+app.use("/notifications", notificationRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

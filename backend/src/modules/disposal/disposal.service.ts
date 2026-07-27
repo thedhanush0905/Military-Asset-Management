@@ -8,6 +8,8 @@ import ConflictError = require("../../shared/errors/ConflictError.js");
 import type disposalTypes = require("./disposal.types.js");
 import statusTransitions = require("../../shared/utils/statusTransitions.js");
 import orchestrator = require("../../shared/utils/transactionOrchestration.js");
+import AuditService = require("../../shared/services/audit.service.js");
+import NotificationService = require("../../shared/services/notification.service.js");
 
 class DisposalService {
   private readonly disposalRepository: DisposalRepository;
@@ -143,6 +145,27 @@ class DisposalService {
     });
 
     const populated = await this.disposalRepository.findById(updated.id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "DISPOSAL",
+      action: "DISPOSAL_APPROVE",
+      entityType: "Disposal",
+      entityId: id,
+      oldValues: { status: "PENDING" },
+      newValues: { status: "APPROVED" },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: "Disposal Request Approved",
+      message: `Disposal request for asset ${(populated as any)?.equipmentAsset?.serialNumber} has been approved.`,
+      type: "DISPOSAL",
+      priority: "MEDIUM",
+      actionUrl: `/disposal/${id}`,
+    });
+
     return this.sanitizeDisposal(populated!);
   }
 
@@ -229,6 +252,27 @@ class DisposalService {
     });
 
     const populated = await this.disposalRepository.findById(id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "DISPOSAL",
+      action: "DISPOSAL_COMPLETE",
+      entityType: "Disposal",
+      entityId: id,
+      oldValues: { status: "APPROVED" },
+      newValues: { status: "COMPLETED" },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: "Disposal Completed",
+      message: `Disposal of asset ${(populated as any)?.equipmentAsset?.serialNumber} has been completed.`,
+      type: "DISPOSAL",
+      priority: "HIGH",
+      actionUrl: `/disposal/${id}`,
+    });
+
     return this.sanitizeDisposal(populated!);
   }
 

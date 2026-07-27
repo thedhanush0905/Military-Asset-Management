@@ -7,6 +7,8 @@ import ForbiddenError = require("../../shared/errors/ForbiddenError.js");
 import ConflictError = require("../../shared/errors/ConflictError.js");
 import type procurementTypes = require("./procurement.types.js");
 import syncInventory = require("../../shared/utils/inventorySync.js");
+import AuditService = require("../../shared/services/audit.service.js");
+import NotificationService = require("../../shared/services/notification.service.js");
 
 class ProcurementService {
   private readonly procurementRepository: ProcurementRepository;
@@ -149,6 +151,27 @@ class ProcurementService {
 
     const updated = await this.procurementRepository.update(id, { status: "APPROVED" });
     const populated = await this.procurementRepository.findById(updated.id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "PROCUREMENT",
+      action: "PROCUREMENT_APPROVE",
+      entityType: "Procurement",
+      entityId: id,
+      oldValues: { status: "DRAFT" },
+      newValues: { status: "APPROVED" },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: "Procurement Order Approved",
+      message: `Procurement order #${populated?.procurementNumber} has been approved.`,
+      type: "PROCUREMENT",
+      priority: "MEDIUM",
+      actionUrl: `/procurement/${id}`,
+    });
+
     return this.sanitizeProcurement(populated!);
   }
 
@@ -284,6 +307,27 @@ class ProcurementService {
     });
 
     const populated = await this.procurementRepository.findById(id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "PROCUREMENT",
+      action: "PROCUREMENT_RECEIVE",
+      entityType: "Procurement",
+      entityId: id,
+      oldValues: { status: procurement.status },
+      newValues: { status: populated?.status },
+    });
+
+    await NotificationService.createNotification({
+      userId: currentUser.id,
+      title: populated?.status === "RECEIVED" ? "Procurement Order Completed" : "Procurement Order Partially Received",
+      message: `Procurement order #${populated?.procurementNumber} items have been received (Status: ${populated?.status}).`,
+      type: "PROCUREMENT",
+      priority: "MEDIUM",
+      actionUrl: `/procurement/${id}`,
+    });
+
     return this.sanitizeProcurement(populated!);
   }
 

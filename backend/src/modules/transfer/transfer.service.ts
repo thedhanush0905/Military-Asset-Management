@@ -8,6 +8,8 @@ import ConflictError = require("../../shared/errors/ConflictError.js");
 import type transferTypes = require("./transfer.types.js");
 import statusTransitions = require("../../shared/utils/statusTransitions.js");
 import orchestrator = require("../../shared/utils/transactionOrchestration.js");
+import AuditService = require("../../shared/services/audit.service.js");
+import NotificationService = require("../../shared/services/notification.service.js");
 
 class TransferService {
   private readonly transferRepository: TransferRepository;
@@ -105,9 +107,27 @@ class TransferService {
       transferredAt: new Date(),
     });
 
-    // TODO: Trigger Audit Log hook here (auditLogService.logAction(...))
-
     const populated = await this.transferRepository.findById(transfer.id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "TRANSFER",
+      action: "TRANSFER_CREATE",
+      entityType: "Transfer",
+      entityId: transfer.id,
+      newValues: { equipmentAssetId: transfer.equipmentAssetId, fromBaseId: transfer.fromBaseId, toBaseId: transfer.toBaseId, status: transfer.status },
+    });
+
+    await NotificationService.createNotification({
+      userId: null,
+      title: "New Transfer Initiated",
+      message: `Transfer of asset ${(populated as any)?.equipmentAsset?.serialNumber} from base ${populated?.fromBaseId} to ${populated?.toBaseId} has been requested.`,
+      type: "TRANSFER",
+      priority: "MEDIUM",
+      actionUrl: `/transfers/${transfer.id}`,
+    });
+
     return this.sanitizeTransfer(populated!);
   }
 
@@ -135,9 +155,28 @@ class TransferService {
       status: "APPROVED",
     });
 
-    // TODO: Trigger Audit Log hook here (auditLogService.logAction(...))
-
     const populated = await this.transferRepository.findById(updated.id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "TRANSFER",
+      action: "TRANSFER_APPROVE",
+      entityType: "Transfer",
+      entityId: id,
+      oldValues: { status: "PENDING" },
+      newValues: { status: "APPROVED" },
+    });
+
+    await NotificationService.createNotification({
+      userId: null,
+      title: "Transfer Approved",
+      message: `Asset transfer request ${id} has been approved.`,
+      type: "TRANSFER",
+      priority: "MEDIUM",
+      actionUrl: `/transfers/${id}`,
+    });
+
     return this.sanitizeTransfer(populated!);
   }
 
@@ -167,9 +206,28 @@ class TransferService {
       remarks: remarks ? remarks.trim() : transfer.remarks,
     });
 
-    // TODO: Trigger Audit Log hook here (auditLogService.logAction(...))
-
     const populated = await this.transferRepository.findById(updated.id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "TRANSFER",
+      action: "TRANSFER_REJECT",
+      entityType: "Transfer",
+      entityId: id,
+      oldValues: { status: transfer.status },
+      newValues: { status: "REJECTED" },
+    });
+
+    await NotificationService.createNotification({
+      userId: null,
+      title: "Transfer Rejected",
+      message: `Asset transfer request ${id} has been rejected.`,
+      type: "TRANSFER",
+      priority: "LOW",
+      actionUrl: `/transfers/${id}`,
+    });
+
     return this.sanitizeTransfer(populated!);
   }
 
@@ -227,6 +285,27 @@ class TransferService {
     });
 
     const populated = await this.transferRepository.findById(id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "TRANSFER",
+      action: "TRANSFER_DISPATCH",
+      entityType: "Transfer",
+      entityId: id,
+      oldValues: { status: "APPROVED" },
+      newValues: { status: "IN_TRANSIT" },
+    });
+
+    await NotificationService.createNotification({
+      userId: null,
+      title: "Transfer Dispatched",
+      message: `Transfer of asset ${(populated as any)?.equipmentAsset?.serialNumber} has been dispatched.`,
+      type: "TRANSFER",
+      priority: "MEDIUM",
+      actionUrl: `/transfers/${id}`,
+    });
+
     return this.sanitizeTransfer(populated!);
   }
 
@@ -285,6 +364,27 @@ class TransferService {
     });
 
     const populated = await this.transferRepository.findById(id);
+
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "TRANSFER",
+      action: "TRANSFER_RECEIVE",
+      entityType: "Transfer",
+      entityId: id,
+      oldValues: { status: "IN_TRANSIT" },
+      newValues: { status: "COMPLETED" },
+    });
+
+    await NotificationService.createNotification({
+      userId: null,
+      title: "Transfer Completed",
+      message: `Asset ${(populated as any)?.equipmentAsset?.serialNumber} transfer from base ${populated?.fromBaseId} to ${populated?.toBaseId} has been successfully completed.`,
+      type: "TRANSFER",
+      priority: "MEDIUM",
+      actionUrl: `/transfers/${id}`,
+    });
+
     return this.sanitizeTransfer(populated!);
   }
 
