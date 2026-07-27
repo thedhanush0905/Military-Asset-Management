@@ -6,6 +6,7 @@ import NotFoundError = require("../../shared/errors/NotFoundError.js");
 import ForbiddenError = require("../../shared/errors/ForbiddenError.js");
 import ConflictError = require("../../shared/errors/ConflictError.js");
 import type equipmentAssetTypes = require("./equipment-asset.types.js");
+import syncInventory = require("../../shared/utils/inventorySync.js");
 
 class EquipmentAssetService {
   private readonly assetRepository: EquipmentAssetRepository;
@@ -42,73 +43,7 @@ class EquipmentAssetService {
     };
   }
 
-  /**
-   * Recalculates and updates the aggregate Inventory totals for a given equipment + base pair.
-   * This MUST run inside the transaction scope.
-   */
-  private async syncInventory(
-    equipmentId: string,
-    baseId: string,
-    tx: prismaClientModule.Prisma.TransactionClient
-  ): Promise<void> {
-    const assets = await tx.equipmentAsset.findMany({
-      where: {
-        equipmentId,
-        baseId,
-        isActive: true,
-      },
-      select: {
-        status: true,
-      },
-    });
 
-    let availableQuantity = 0;
-    let allocatedQuantity = 0;
-    let maintenanceQuantity = 0;
-    let damagedQuantity = 0;
-
-    for (const asset of assets) {
-      if (asset.status === "AVAILABLE") {
-        availableQuantity++;
-      } else if (asset.status === "ASSIGNED" || asset.status === "TRANSIT") {
-        allocatedQuantity++;
-      } else if (asset.status === "MAINTENANCE") {
-        maintenanceQuantity++;
-      } else if (asset.status === "DAMAGED") {
-        damagedQuantity++;
-      }
-    }
-
-    const quantity = availableQuantity + allocatedQuantity + maintenanceQuantity + damagedQuantity;
-
-    await tx.inventory.upsert({
-      where: {
-        equipmentId_baseId: {
-          equipmentId,
-          baseId,
-        },
-      },
-      create: {
-        equipmentId,
-        baseId,
-        availableQuantity,
-        allocatedQuantity,
-        maintenanceQuantity,
-        damagedQuantity,
-        quantity,
-        minimumStock: 0,
-        isActive: true,
-      },
-      update: {
-        availableQuantity,
-        allocatedQuantity,
-        maintenanceQuantity,
-        damagedQuantity,
-        quantity,
-        isActive: true,
-      },
-    });
-  }
 
   public async createAsset(
     currentUser: prismaClientModule.User,
@@ -153,7 +88,7 @@ class EquipmentAssetService {
       }, tx);
 
       // Recalculate inventory
-      await this.syncInventory(data.equipmentId, data.baseId, tx);
+      await syncInventory(data.equipmentId, data.baseId, tx);
 
       return asset;
     });
@@ -321,7 +256,7 @@ class EquipmentAssetService {
       const updatedAsset = await this.assetRepository.update(id, updatePayload, tx);
 
       // Recalculate inventory counts
-      await this.syncInventory(target.equipmentId, target.baseId, tx);
+      await syncInventory(target.equipmentId, target.baseId, tx);
 
       return updatedAsset;
     });
@@ -368,7 +303,7 @@ class EquipmentAssetService {
       const softDeletedAsset = await this.assetRepository.softDelete(id, tx);
 
       // Recalculate inventory
-      await this.syncInventory(target.equipmentId, target.baseId, tx);
+      await syncInventory(target.equipmentId, target.baseId, tx);
 
       return softDeletedAsset;
     });

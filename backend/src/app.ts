@@ -13,6 +13,9 @@ import baseRoutes = require("./modules/base/base.routes.js");
 import equipmentRoutes = require("./modules/equipment/equipment.routes.js");
 import equipmentAssetRoutes = require("./modules/equipment-asset/equipment-asset.routes.js");
 import inventoryRoutes = require("./modules/inventory/inventory.routes.js");
+import assignmentRoutes = require("./modules/assignment/assignment.routes.js");
+import transferRoutes = require("./modules/transfer/transfer.routes.js");
+import movementRoutes = require("./modules/movement/movement.routes.js");
 
 const app = express();
 
@@ -39,6 +42,9 @@ app.use("/bases", baseRoutes);
 app.use("/equipment", equipmentRoutes);
 app.use("/equipment-assets", equipmentAssetRoutes);
 app.use("/inventory", inventoryRoutes);
+app.use("/assignments", assignmentRoutes);
+app.use("/transfers", transferRoutes);
+app.use("/movements", movementRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

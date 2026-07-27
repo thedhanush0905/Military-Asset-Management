@@ -90,7 +90,7 @@ class EquipmentAssetRepository {
     return prisma.assignment.count({
       where: {
         equipmentAssetId: assetId,
-        status: { in: ["ACTIVE", "PARTIALLY_RETURNED"] },
+        status: "ACTIVE",
       },
     });
   }
@@ -99,7 +99,7 @@ class EquipmentAssetRepository {
     return prisma.transfer.count({
       where: {
         equipmentAssetId: assetId,
-        status: { in: ["PENDING", "SHIPPED"] },
+        status: { in: ["PENDING", "APPROVED", "IN_TRANSIT"] },
       },
     });
   }

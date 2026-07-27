@@ -62,27 +62,45 @@ enum ReferenceType {
 
 enum TransferStatus {
   PENDING
-  SHIPPED
-  RECEIVED
+  APPROVED
+  IN_TRANSIT
+  COMPLETED
+  REJECTED
   CANCELLED
 }
 
 enum AssignmentStatus {
   ACTIVE
   RETURNED
-  PARTIALLY_RETURNED
-  LOST
-  DAMAGED
 }
 
 enum EquipmentStatus {
   AVAILABLE
   ASSIGNED
-  TRANSIT
+  IN_TRANSIT
   MAINTENANCE
   DAMAGED
   LOST
   RETIRED
+}
+
+enum AssetMovementType {
+  ASSIGNMENT
+  RETURN
+  TRANSFER_OUT
+  TRANSFER_IN
+  MAINTENANCE_START
+  MAINTENANCE_COMPLETE
+  PROCUREMENT
+  DISPOSAL
+}
+
+enum MovementReferenceType {
+  ASSIGNMENT
+  TRANSFER
+  MAINTENANCE
+  PROCUREMENT
+  DISPOSAL
 }
 
 enum EquipmentCondition {
@@ -104,10 +122,12 @@ model Base {
   location String
   isActive Boolean @default(true)
 
-  users           User[]
-  inventories     Inventory[]
-  equipmentAssets EquipmentAsset[]
-  ledgers         Ledger[]
+  users             User[]
+  inventories       Inventory[]
+  equipmentAssets   EquipmentAsset[]
+  ledgers           Ledger[]
+  outgoingMovements MovementHistory[] @relation("SourceMovements")
+  incomingMovements MovementHistory[] @relation("DestinationMovements")
 
   purchases     Purchase[]
   assignments   Assignment[]
@@ -136,10 +156,12 @@ model User {
   ledgers  Ledger[]
   auditLogs AuditLog[]
 
-  purchases    Purchase[]
-  transfers    Transfer[]
-  assignments  Assignment[]
-  expenditures Expenditure[]
+  purchases           Purchase[]
+  transfers           Transfer[]
+  assignments         Assignment[]
+  returnedAssignments Assignment[]      @relation("ReturnedAssignments")
+  expenditures        Expenditure[]
+  movements           MovementHistory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -191,6 +213,7 @@ model EquipmentAsset {
   assignments  Assignment[]
   expenditures Expenditure[]
   ledgers      Ledger[]
+  movements    MovementHistory[]
 
   @@index([equipmentId])
   @@index([baseId])
@@ -210,6 +233,7 @@ model Inventory {
   quantity            Int     @default(0)
   availableQuantity   Int     @default(0)
   allocatedQuantity   Int     @default(0)
+  inTransitQuantity   Int     @default(0)
   maintenanceQuantity Int     @default(0)
   damagedQuantity     Int     @default(0)
   minimumStock        Int     @default(0)
@@ -300,12 +324,14 @@ model Assignment {
 
   assignedTo String
 
-  quantity         Int
-  returnedQuantity Int @default(0)
   status           AssignmentStatus @default(ACTIVE)
 
   assignedById String
   assignedBy User @relation(fields: [assignedById], references: [id])
+
+  returnedAt DateTime?
+  returnedById String?
+  returnedBy User? @relation("ReturnedAssignments", fields: [returnedById], references: [id])
 
   remarks String?
 
@@ -319,6 +345,7 @@ model Assignment {
   @@index([baseId])
   @@index([equipmentAssetId])
   @@index([assignedById])
+  @@index([returnedById])
 }
 
 model Expenditure {
@@ -416,5 +443,31 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@index([userId])
+  @@index([createdAt])
+}
+
+model MovementHistory {
+  id                 String                @id @default(cuid())
+  equipmentAssetId   String
+  equipmentAsset     EquipmentAsset        @relation(fields: [equipmentAssetId], references: [id])
+  movementType       AssetMovementType
+  sourceBaseId       String?
+  sourceBase         Base?                 @relation("SourceMovements", fields: [sourceBaseId], references: [id])
+  destinationBaseId  String?
+  destinationBase    Base?                 @relation("DestinationMovements", fields: [destinationBaseId], references: [id])
+  referenceType      MovementReferenceType
+  referenceId        String
+  performedById      String
+  performedBy        User                  @relation(fields: [performedById], references: [id])
+  remarks            String?
+  createdAt          DateTime              @default(now())
+
+  @@index([equipmentAssetId])
+  @@index([sourceBaseId])
+  @@index([destinationBaseId])
+  @@index([performedById])
+  @@index([movementType])
+  @@index([referenceType, referenceId])
+  @@index([equipmentAssetId, createdAt])
   @@index([createdAt])
 }
