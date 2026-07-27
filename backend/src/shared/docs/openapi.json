@@ -1,0 +1,97 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Military Asset Management System API",
+    "description": "API Specification for the backend services of the Military Asset Management System.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate User",
+        "description": "Generates JWT session token on successful login credentials.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Successfully authenticated" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "summary": "Global Search",
+        "description": "Perform parallel domain provider queries and return normalized results.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Successful search operations" }
+        }
+      }
+    },
+    "/reports": {
+      "post": {
+        "summary": "Request Report Job",
+        "description": "Submits report filters and starts background serialization process.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reportType": { "type": "string", "enum": ["INVENTORY", "ASSETS", "MAINTENANCE", "PROCUREMENT", "DISPOSALS"] },
+                  "exportFormat": { "type": "string", "enum": ["PDF", "XLSX", "CSV"] },
+                  "filters": { "type": "object" }
+                },
+                "required": ["reportType", "exportFormat"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Report job accepted and queued" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

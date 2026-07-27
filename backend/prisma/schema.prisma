@@ -157,6 +157,9 @@ model User {
   ledgers       Ledger[]
   auditLogs     AuditLog[]
   notifications Notification[]
+  attachments   Attachment[]
+  inspections   Inspection[]
+  reportRequests ReportJob[]      @relation("ReportRequests")
 
   purchases             Purchase[]
   transfers             Transfer[]
@@ -214,21 +217,29 @@ model EquipmentAsset {
   condition    EquipmentCondition @default(NEW)
   remarks      String?
   isActive     Boolean            @default(true)
+  qrCodeUrl    String?
+  unitId       String?
+  unit         OrganizationUnit?  @relation(fields: [unitId], references: [id])
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
-  transfers    Transfer[]
-  assignments  Assignment[]
-  expenditures Expenditure[]
-  ledgers      Ledger[]
-  movements    MovementHistory[]
-  maintenances Maintenance[]
-  disposals    Disposal[]
+  transfers           Transfer[]
+  assignments         Assignment[]
+  expenditures        Expenditure[]
+  ledgers             Ledger[]
+  movements           MovementHistory[]
+  maintenances        Maintenance[]
+  disposals           Disposal[]
+  warranties          Warranty[]
+  valuation           AssetValuation?
+  inspections         Inspection[]
+  depreciationHistory DepreciationHistory[]
 
   @@index([equipmentId])
   @@index([baseId])
   @@index([status])
   @@index([isActive])
+  @@index([unitId])
 }
 
 model Inventory {
@@ -333,6 +344,8 @@ model Assignment {
   equipmentAsset   EquipmentAsset @relation(fields: [equipmentAssetId], references: [id])
 
   assignedTo String
+  personnelId String?
+  personnel   Personnel? @relation(fields: [personnelId], references: [id])
 
   status           AssignmentStatus @default(ACTIVE)
 
@@ -356,6 +369,7 @@ model Assignment {
   @@index([equipmentAssetId])
   @@index([assignedById])
   @@index([returnedById])
+  @@index([personnelId])
 }
 
 model Expenditure {
@@ -558,6 +572,8 @@ model Procurement {
   id                   String            @id @default(cuid())
   procurementNumber    String            @unique
   supplier             String
+  supplierId           String?
+  supplierRef          Supplier?         @relation(fields: [supplierId], references: [id])
   status               ProcurementStatus @default(DRAFT)
   purchaseDate         DateTime
   expectedDeliveryDate DateTime
@@ -574,6 +590,7 @@ model Procurement {
 
   @@index([baseId])
   @@index([status])
+  @@index([supplierId])
 }
 
 model ProcurementItem {
@@ -658,4 +675,239 @@ model Notification {
   @@index([isRead])
   @@index([type])
   @@index([createdAt])
+}
+
+enum OrgLevel {
+  COMMAND
+  DIVISION
+  BRIGADE
+  BATTALION
+  COMPANY
+  PLATOON
+  SECTION
+}
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PersonnelStatus {
+  ACTIVE
+  INACTIVE
+  DEPLOYED
+  ON_LEAVE
+}
+
+enum InspectionResult {
+  PENDING
+  PASS
+  FAIL
+}
+
+enum WarrantyStatus {
+  ACTIVE
+  EXPIRED
+  VOIDED
+}
+
+enum DepreciationMethod {
+  STRAIGHT_LINE
+  DOUBLE_DECLINING
+}
+
+enum ReportJobStatus {
+  PENDING
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+// 1. Military Organizational Unit (Hierarchy)
+model OrganizationUnit {
+  id              String             @id @default(cuid())
+  name            String
+  code            String             @unique
+  level           OrgLevel
+  parentId        String?
+  parent          OrganizationUnit?  @relation("OrgHierarchy", fields: [parentId], references: [id])
+  children        OrganizationUnit[] @relation("OrgHierarchy")
+  personnel       Personnel[]
+  equipmentAssets EquipmentAsset[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([parentId])
+  @@index([level])
+}
+
+// 2. Personnel Module
+model Personnel {
+  id            String             @id @default(cuid())
+  serviceNumber String             @unique
+  rank          String
+  firstName     String
+  lastName      String
+  unitId        String?
+  unit          OrganizationUnit?  @relation(fields: [unitId], references: [id])
+  email         String?
+  phone         String?
+  status        PersonnelStatus    @default(ACTIVE)
+  assignments   Assignment[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([unitId])
+  @@index([status])
+  @@index([serviceNumber])
+}
+
+// 3. Supplier Management
+model Supplier {
+  id           String         @id @default(cuid())
+  name         String
+  code         String         @unique
+  contactName  String?
+  email        String?
+  phone        String?
+  address      String?
+  status       SupplierStatus @default(ACTIVE)
+  isActive     Boolean        @default(true)
+  procurements Procurement[]
+  warranties   Warranty[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([status])
+}
+
+// 4. File & Document Attachments
+model Attachment {
+  id           String    @id @default(cuid())
+  filename     String
+  mimeType     String
+  fileSize     Int
+  storageKey   String    @unique
+  uploadedById String
+  uploadedBy   User      @relation(fields: [uploadedById], references: [id])
+  entityType   String    // "PROCUREMENT", "MAINTENANCE", "DISPOSAL", "EQUIPMENT_ASSET", "INSPECTION"
+  entityId     String
+  version      Int       @default(1)
+  isLatest     Boolean   @default(true)
+  metadata     Json?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([isActive])
+}
+
+// 5. Warranty Tracking
+model Warranty {
+  id               String          @id @default(cuid())
+  equipmentAssetId String          
+  equipmentAsset   EquipmentAsset  @relation(fields: [equipmentAssetId], references: [id])
+  startDate        DateTime
+  endDate          DateTime
+  vendorId         String?
+  vendor           Supplier?       @relation(fields: [vendorId], references: [id])
+  coverageDetails  String?
+  status           WarrantyStatus  @default(ACTIVE)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([equipmentAssetId])
+  @@index([endDate])
+  @@index([status])
+}
+
+// 6. Inspection Workflows
+model Inspection {
+  id               String           @id @default(cuid())
+  equipmentAssetId String
+  equipmentAsset   EquipmentAsset   @relation(fields: [equipmentAssetId], references: [id])
+  scheduledDate    DateTime
+  completedDate    DateTime?
+  inspectorId      String
+  inspector        User             @relation(fields: [inspectorId], references: [id])
+  result           InspectionResult @default(PENDING)
+  remarks          String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([equipmentAssetId])
+  @@index([result])
+  @@index([scheduledDate])
+}
+
+// 7. Depreciation & Valuation
+model AssetValuation {
+  id                 String             @id @default(cuid())
+  equipmentAssetId   String             @unique
+  equipmentAsset     EquipmentAsset     @relation(fields: [equipmentAssetId], references: [id])
+  purchaseValue      Decimal
+  currentValue       Decimal
+  bookValue          Decimal
+  residualValue      Decimal
+  depreciationMethod DepreciationMethod @default(STRAIGHT_LINE)
+  depreciationRate   Decimal
+  lastCalculatedAt   DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model DepreciationHistory {
+  id                String   @id @default(cuid())
+  equipmentAssetId  String
+  equipmentAsset    EquipmentAsset @relation(fields: [equipmentAssetId], references: [id])
+  date              DateTime
+  amount            Decimal
+  previousBookValue Decimal
+  newBookValue      Decimal
+  createdAt         DateTime @default(now())
+
+  @@index([equipmentAssetId])
+  @@index([date])
+}
+
+// 8. Cron Logs
+model CronJobLog {
+  id          String    @id @default(cuid())
+  jobName     String
+  startedAt   DateTime
+  completedAt DateTime?
+  status      String
+  error       String?
+
+  @@index([jobName])
+  @@index([startedAt])
+}
+
+// 9. Report Job Queue
+model ReportJob {
+  id            String          @id @default(cuid())
+  reportType    String          
+  exportFormat  String          
+  requestedById String
+  requestedBy   User            @relation("ReportRequests", fields: [requestedById], references: [id])
+  status        ReportJobStatus @default(PENDING)
+  filters       Json?           
+  storageKey    String?         
+  errorMessage  String?         
+  requestedAt   DateTime        @default(now())
+  startedAt     DateTime?
+  completedAt   DateTime?
+
+  @@index([requestedById])
+  @@index([status])
+  @@index([requestedAt])
+}
+
+model SystemConfig {
+  key         String   @id
+  value       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
