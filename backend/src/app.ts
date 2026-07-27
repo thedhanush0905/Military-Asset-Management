@@ -10,6 +10,9 @@ import Messages = require("./constants/messages.js");
 import authRoutes = require("./modules/auth/auth.routes.js");
 import userRoutes = require("./modules/user/user.routes.js");
 import baseRoutes = require("./modules/base/base.routes.js");
+import equipmentRoutes = require("./modules/equipment/equipment.routes.js");
+import equipmentAssetRoutes = require("./modules/equipment-asset/equipment-asset.routes.js");
+import inventoryRoutes = require("./modules/inventory/inventory.routes.js");
 
 const app = express();
 
@@ -33,6 +36,9 @@ app.get("/health", (_req, res) => {
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/bases", baseRoutes);
+app.use("/equipment", equipmentRoutes);
+app.use("/equipment-assets", equipmentAssetRoutes);
+app.use("/inventory", inventoryRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

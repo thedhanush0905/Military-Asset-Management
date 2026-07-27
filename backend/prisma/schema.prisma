@@ -75,6 +75,24 @@ enum AssignmentStatus {
   DAMAGED
 }
 
+enum EquipmentStatus {
+  AVAILABLE
+  ASSIGNED
+  TRANSIT
+  MAINTENANCE
+  DAMAGED
+  LOST
+  RETIRED
+}
+
+enum EquipmentCondition {
+  NEW
+  GOOD
+  FAIR
+  DAMAGED
+  UNSERVICEABLE
+}
+
 //
 // MODELS
 //
@@ -86,9 +104,10 @@ model Base {
   location String
   isActive Boolean @default(true)
 
-  users         User[]
-  inventories   Inventory[]
-  ledgers       Ledger[]
+  users           User[]
+  inventories     Inventory[]
+  equipmentAssets EquipmentAsset[]
+  ledgers         Ledger[]
 
   purchases     Purchase[]
   assignments   Assignment[]
@@ -129,43 +148,81 @@ model User {
 }
 
 model Equipment {
-  id          String @id @default(cuid())
-  name        String @unique
-  category    EquipmentCategory
-  unit        Unit
-  description String?
+  id                String            @id @default(cuid())
+  name              String
+  category          EquipmentCategory
+  unit              Unit
+  description       String?
+  manufacturer      String?
+  model             String?
+  specifications    String?
+  expectedLifeYears Int?
+  isActive          Boolean           @default(true)
 
+  assets      EquipmentAsset[]
   inventories Inventory[]
-  ledgers     Ledger[]
 
   purchases    Purchase[]
-  transfers    Transfer[]
-  assignments  Assignment[]
-  expenditures Expenditure[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category])
+  @@index([isActive])
+}
+
+model EquipmentAsset {
+  id           String             @id @default(cuid())
+  equipmentId  String
+  equipment    Equipment          @relation(fields: [equipmentId], references: [id])
+  baseId       String
+  base         Base               @relation(fields: [baseId], references: [id])
+  serialNumber String             @unique
+  purchaseDate DateTime?
+  purchaseCost Decimal
+  status       EquipmentStatus    @default(AVAILABLE)
+  condition    EquipmentCondition @default(NEW)
+  remarks      String?
+  isActive     Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  transfers    Transfer[]
+  assignments  Assignment[]
+  expenditures Expenditure[]
+  ledgers      Ledger[]
+
+  @@index([equipmentId])
+  @@index([baseId])
+  @@index([status])
+  @@index([isActive])
 }
 
 model Inventory {
   id String @id @default(cuid())
 
   baseId String
-  base Base @relation(fields: [baseId], references: [id])
+  base   Base   @relation(fields: [baseId], references: [id])
 
   equipmentId String
-  equipment Equipment @relation(fields: [equipmentId], references: [id])
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
 
-  quantity Int @default(0)
+  quantity            Int     @default(0)
+  availableQuantity   Int     @default(0)
+  allocatedQuantity   Int     @default(0)
+  maintenanceQuantity Int     @default(0)
+  damagedQuantity     Int     @default(0)
+  minimumStock        Int     @default(0)
+  remarks             String?
+  isActive            Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([baseId, equipmentId])
-
+  @@unique([equipmentId, baseId])
   @@index([equipmentId])
+  @@index([baseId])
+  @@index([isActive])
 }
 
 model Purchase {
@@ -202,8 +259,8 @@ model Purchase {
 model Transfer {
   id String @id @default(cuid())
 
-  equipmentId String
-  equipment Equipment @relation(fields: [equipmentId], references: [id])
+  equipmentAssetId String
+  equipmentAsset   EquipmentAsset @relation(fields: [equipmentAssetId], references: [id])
 
   fromBaseId String
   fromBase Base @relation("FromBase", fields: [fromBaseId], references: [id])
@@ -228,7 +285,7 @@ model Transfer {
 
   @@index([fromBaseId])
   @@index([toBaseId])
-  @@index([equipmentId])
+  @@index([equipmentAssetId])
   @@index([transferredById])
 }
 
@@ -238,8 +295,8 @@ model Assignment {
   baseId String
   base Base @relation(fields: [baseId], references: [id])
 
-  equipmentId String
-  equipment Equipment @relation(fields: [equipmentId], references: [id])
+  equipmentAssetId String
+  equipmentAsset   EquipmentAsset @relation(fields: [equipmentAssetId], references: [id])
 
   assignedTo String
 
@@ -260,7 +317,7 @@ model Assignment {
   updatedAt DateTime @updatedAt
 
   @@index([baseId])
-  @@index([equipmentId])
+  @@index([equipmentAssetId])
   @@index([assignedById])
 }
 
@@ -270,8 +327,8 @@ model Expenditure {
   baseId String
   base Base @relation(fields: [baseId], references: [id])
 
-  equipmentId String
-  equipment Equipment @relation(fields: [equipmentId], references: [id])
+  equipmentAssetId String
+  equipmentAsset   EquipmentAsset @relation(fields: [equipmentAssetId], references: [id])
 
   quantity Int
 
@@ -290,7 +347,7 @@ model Expenditure {
   updatedAt DateTime @updatedAt
 
   @@index([baseId])
-  @@index([equipmentId])
+  @@index([equipmentAssetId])
   @@index([expendedById])
 }
 
@@ -300,8 +357,8 @@ model Ledger {
   baseId String
   base Base @relation(fields: [baseId], references: [id])
 
-  equipmentId String
-  equipment Equipment @relation(fields: [equipmentId], references: [id])
+  equipmentAssetId String
+  equipmentAsset   EquipmentAsset @relation(fields: [equipmentAssetId], references: [id])
 
   movementType MovementType
 
@@ -329,10 +386,10 @@ model Ledger {
   createdAt DateTime @default(now())
 
   @@index([baseId])
-  @@index([equipmentId])
+  @@index([equipmentAssetId])
   @@index([movementType])
   @@index([createdAt])
-  @@index([baseId, equipmentId, createdAt])
+  @@index([baseId, equipmentAssetId, createdAt])
   @@index([baseId, createdAt])
   @@index([purchaseId])
   @@index([transferId])
