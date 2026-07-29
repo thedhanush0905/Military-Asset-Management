@@ -1,4 +1,4 @@
-import prisma = require("C:/Users/Admin/Downloads/Military-Asset-Management/backend/src/shared/prisma/prisma.js");
+import prisma = require("./shared/prisma/prisma.js");
 
 async function main() {
   console.log("====================================================");

@@ -1,4 +1,4 @@
-import prisma = require("C:/Users/Admin/Downloads/Military-Asset-Management/backend/src/shared/prisma/prisma.js");
+import prisma = require("./shared/prisma/prisma.js");
 
 async function main() {
   console.log("====================================================");
@@ -25,7 +25,7 @@ async function main() {
   console.log(`Dest Base: ${destBase.name}`);
   console.log(`Catalog Model: ${equipment.name}`);
 
-  const syncInventory = require("C:/Users/Admin/Downloads/Military-Asset-Management/backend/src/shared/utils/inventorySync.js");
+  const syncInventory = require("./shared/utils/inventorySync.js");
 
   // Helper functions
   const getInventory = async (baseId: string) => {

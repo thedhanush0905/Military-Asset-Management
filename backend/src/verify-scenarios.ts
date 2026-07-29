@@ -1,4 +1,4 @@
-import prisma = require("C:/Users/Admin/Downloads/Military-Asset-Management/backend/src/shared/prisma/prisma.js");
+import prisma = require("./shared/prisma/prisma.js");
 
 async function main() {
   console.log("====================================================");
@@ -43,7 +43,7 @@ async function main() {
     } : { quantity: 0, available: 0, allocated: 0, maintenance: 0 };
   };
 
-  const syncInventory = require("C:/Users/Admin/Downloads/Military-Asset-Management/backend/src/shared/utils/inventorySync.js");
+  const syncInventory = require("./shared/utils/inventorySync.js");
   await syncInventory(equipment.id, base.id, prisma);
 
   const initialDashboard = await getDashboardOverview();
