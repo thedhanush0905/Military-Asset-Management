@@ -16,10 +16,12 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/forms/FormField";
 import { Select } from "@/components/ui/forms/Select";
 import { Plus, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supplierService } from "@/services/supplier.service";
 
 const procurementFormSchema = z.object({
   procurementNumber: z.string().trim().min(3, "PO number must be at least 3 characters").max(50),
-  supplier: z.string().trim().min(2, "Supplier name must be at least 2 characters").max(100),
+  supplierId: z.string().trim().min(1, "Please select a supplier"),
   purchaseDate: z.string().min(1, "Please select purchase date"),
   expectedDeliveryDate: z.string().min(1, "Please select expected delivery date"),
   baseId: z.string().trim().min(1, "Please select destination base"),
@@ -64,7 +66,7 @@ export function ProcurementDialog({
     resolver: zodResolver(procurementFormSchema) as unknown as Resolver<ProcurementFormValues>,
     defaultValues: {
       procurementNumber: "",
-      supplier: "",
+      supplierId: "",
       purchaseDate: new Date().toISOString().split("T")[0],
       expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       baseId: "",
@@ -86,7 +88,7 @@ export function ProcurementDialog({
     if (isOpen) {
       reset({
         procurementNumber: `PO-${Date.now().toString().slice(-6)}`,
-        supplier: "",
+        supplierId: "",
         purchaseDate: new Date().toISOString().split("T")[0],
         expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
         baseId: "",
@@ -95,6 +97,12 @@ export function ProcurementDialog({
       });
     }
   }, [isOpen, reset]);
+
+  const { data: suppliersData } = useQuery({
+    queryKey: ["suppliers", "list", { status: "ACTIVE" }],
+    queryFn: () => supplierService.getSuppliers({ page: 1, limit: 100, status: "ACTIVE" }),
+  });
+  const supplierOptions = suppliersData?.data?.suppliers.map((s) => ({ value: s.id, label: s.name })) || [];
 
   const onSubmit = async (data: ProcurementFormValues) => {
     await onConfirm(data);
@@ -121,12 +129,14 @@ export function ProcurementDialog({
               disabled={isLoading}
               {...register("procurementNumber")}
             />
-            <FormField
+            <Select
               label="Supplier Vendor"
-              placeholder="e.g. Lockheed Martin"
-              error={errors.supplier?.message as string}
-              disabled={isLoading}
-              {...register("supplier")}
+              placeholder={supplierOptions.length > 0 ? "Select supplier..." : "No suppliers available. Create a supplier first."}
+              options={supplierOptions}
+              value={watch("supplierId") || ""}
+              onChange={(e) => setValue("supplierId", e.target.value)}
+              disabled={isLoading || supplierOptions.length === 0}
+              error={errors.supplierId?.message as string}
             />
           </div>
 

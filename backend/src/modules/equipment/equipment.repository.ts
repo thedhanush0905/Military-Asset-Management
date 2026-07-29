@@ -12,6 +12,7 @@ class EquipmentRepository {
       return prisma.equipment.findFirst({
         where: { id, isActive: true },
         include: {
+          supplier: true,
           _count: {
             select: {
               assets: { where: { isActive: true } },
@@ -24,6 +25,7 @@ class EquipmentRepository {
     return prisma.equipment.findUnique({
       where,
       include: {
+        supplier: true,
         _count: {
           select: {
             assets: true,
@@ -58,6 +60,7 @@ class EquipmentRepository {
         take: parsedTake,
         orderBy: options.orderBy,
         include: {
+          supplier: true,
           _count: {
             select: {
               assets: { where: { isActive: true } },

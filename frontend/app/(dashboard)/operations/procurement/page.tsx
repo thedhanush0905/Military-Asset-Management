@@ -81,7 +81,7 @@ export default function ProcurementPage() {
       }));
       return procurementService.createProcurement({
         procurementNumber: data.procurementNumber,
-        supplier: data.supplier,
+        supplierId: data.supplierId,
         purchaseDate: new Date(data.purchaseDate).toISOString(),
         expectedDeliveryDate: new Date(data.expectedDeliveryDate).toISOString(),
         baseId: data.baseId,

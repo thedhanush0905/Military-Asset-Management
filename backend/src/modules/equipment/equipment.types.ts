@@ -6,7 +6,8 @@ export interface EquipmentResponse {
   category: prismaClientModule.EquipmentCategory;
   unit: prismaClientModule.Unit;
   description: string | null;
-  manufacturer: string | null;
+  supplierId: string | null;
+  supplier?: any | null;
   model: string | null;
   specifications: string | null;
   expectedLifeYears: number | null;
@@ -32,6 +33,6 @@ export interface FindEquipmentParams {
   limit: number;
   search?: string;
   category?: prismaClientModule.EquipmentCategory;
-  sortBy?: "name" | "category" | "manufacturer" | "model" | "createdAt";
+  sortBy?: "name" | "category" | "supplierId" | "model" | "createdAt";
   sortOrder?: "asc" | "desc";
 }

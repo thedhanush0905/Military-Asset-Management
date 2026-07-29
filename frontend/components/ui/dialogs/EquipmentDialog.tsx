@@ -15,13 +15,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { FormField, Select, Textarea } from "@/components/ui/forms";
 import { Equipment } from "@/services/equipment.service";
+import { useQuery } from "@tanstack/react-query";
+import { supplierService } from "@/services/supplier.service";
 
 const equipmentFormSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
   category: z.enum(["WEAPON", "VEHICLE", "AMMUNITION", "COMMUNICATION", "MEDICAL", "OTHER"]),
   unit: z.enum(["NOS", "ROUNDS", "BOXES", "LITRES", "KGS", "METRES"]),
   description: z.string().trim().max(1000).optional().nullable(),
-  manufacturer: z.string().trim().max(100).optional().nullable(),
+  supplierId: z.string().trim().optional().nullable(),
   model: z.string().trim().max(100).optional().nullable(),
   specifications: z.string().trim().max(2000).optional().nullable(),
   expectedLifeYears: z.coerce.number().int().positive("Expected life years must be positive").optional().nullable(),
@@ -54,7 +56,7 @@ export function EquipmentDialog({ isOpen, onClose, onConfirm, equipment, isLoadi
       category: "VEHICLE",
       unit: "NOS",
       description: "",
-      manufacturer: "",
+      supplierId: "",
       model: "",
       specifications: "",
       expectedLifeYears: 10,
@@ -69,7 +71,7 @@ export function EquipmentDialog({ isOpen, onClose, onConfirm, equipment, isLoadi
           category: equipment.category,
           unit: equipment.unit,
           description: equipment.description || "",
-          manufacturer: equipment.manufacturer || "",
+          supplierId: equipment.supplierId || "",
           model: equipment.model || "",
           specifications: equipment.specifications || "",
           expectedLifeYears: equipment.expectedLifeYears || 10,
@@ -80,7 +82,7 @@ export function EquipmentDialog({ isOpen, onClose, onConfirm, equipment, isLoadi
           category: "VEHICLE",
           unit: "NOS",
           description: "",
-          manufacturer: "",
+          supplierId: "",
           model: "",
           specifications: "",
           expectedLifeYears: 10,
@@ -93,13 +95,19 @@ export function EquipmentDialog({ isOpen, onClose, onConfirm, equipment, isLoadi
     const sanitizedData = {
       ...data,
       description: data.description?.trim() || null,
-      manufacturer: data.manufacturer?.trim() || null,
+      supplierId: data.supplierId || null,
       model: data.model?.trim() || null,
       specifications: data.specifications?.trim() || null,
       expectedLifeYears: data.expectedLifeYears || null,
     };
     await onConfirm(sanitizedData);
   };
+
+  const { data: suppliersData } = useQuery({
+    queryKey: ["suppliers", "list", { status: "ACTIVE" }],
+    queryFn: () => supplierService.getSuppliers({ page: 1, limit: 100, status: "ACTIVE" }),
+  });
+  const supplierOptions = suppliersData?.data?.suppliers.map((s) => ({ value: s.id, label: s.name })) || [];
 
   const selectedCategory = watch("category");
   const selectedUnit = watch("unit");
@@ -138,12 +146,13 @@ export function EquipmentDialog({ isOpen, onClose, onConfirm, equipment, isLoadi
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                label="Manufacturer"
-                placeholder="e.g. General Dynamics"
-                error={errors.manufacturer?.message}
+              <Select
+                label="Supplier"
+                placeholder="Select a Supplier"
+                options={supplierOptions}
+                error={errors.supplierId?.message}
                 disabled={isLoading}
-                {...register("manufacturer")}
+                {...register("supplierId")}
               />
               <Select
                 label="Hardware Category"

@@ -47,7 +47,7 @@ export const procurementService = {
 
   async createProcurement(data: {
     procurementNumber: string;
-    supplier: string;
+    supplierId: string;
     purchaseDate: string;
     expectedDeliveryDate: string;
     baseId: string;

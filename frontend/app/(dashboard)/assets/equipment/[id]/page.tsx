@@ -285,6 +285,7 @@ export default function AssetDetailsPage({ params }: PageProps) {
         onClose={() => setIsAssignOpen(false)}
         onConfirm={handleAssign}
         personnel={personnelOptions}
+        fixedAssetId={asset.id}
         assetName={`${equipment.name} (${asset.serialNumber})`}
         isLoading={assignAssetMutation.isPending}
       />
@@ -312,6 +313,7 @@ export default function AssetDetailsPage({ params }: PageProps) {
         isOpen={isInspectionOpen}
         onClose={() => setIsInspectionOpen(false)}
         onConfirm={handleInspectionMock}
+        fixedAssetId={asset.id}
         assetName={`${equipment.name} (${asset.serialNumber})`}
         isLoading={logInspectionMutation.isPending}
       />
@@ -330,7 +332,7 @@ export default function AssetDetailsPage({ params }: PageProps) {
               <StatusBadge status={asset.status} />
             </div>
             <p className="text-[10px] text-muted-foreground mt-1 font-bold">
-              UID: {asset.serialNumber} • {equipment.manufacturer} ({equipment.model})
+              UID: {asset.serialNumber} • {equipment.supplier?.name || "No Supplier"} ({equipment.model})
             </p>
             <div className="flex gap-4 mt-2 text-muted-foreground font-semibold text-[10px]">
               <span className="flex items-center gap-1">
@@ -457,8 +459,8 @@ export default function AssetDetailsPage({ params }: PageProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#E6E8E6] dark:border-[#22352B]">
                 <div className="space-y-3">
                   <div className="flex justify-between border-b border-[#E6E8E6]/60 dark:border-[#22352B]/60 pb-1.5">
-                    <span className="text-muted-foreground font-semibold">Manufacturer:</span>
-                    <span className="font-bold text-foreground">{equipment.manufacturer}</span>
+                    <span className="text-muted-foreground font-semibold">Supplier:</span>
+                    <span className="font-bold text-foreground">{equipment.supplier?.name || "No Supplier"}</span>
                   </div>
                   <div className="flex justify-between border-b border-[#E6E8E6]/60 dark:border-[#22352B]/60 pb-1.5">
                     <span className="text-muted-foreground font-semibold">Model Class:</span>

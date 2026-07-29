@@ -9,7 +9,8 @@ export interface Equipment {
   category: EquipmentCategory;
   unit: EquipmentUnit;
   description: string | null;
-  manufacturer: string | null;
+  supplierId: string | null;
+  supplier?: { id: string; name: string } | null;
   model: string | null;
   specifications: string | null;
   expectedLifeYears: number | null;
@@ -25,7 +26,7 @@ export interface EquipmentListParams {
   limit?: number;
   search?: string;
   category?: EquipmentCategory;
-  sortBy?: "name" | "category" | "manufacturer" | "model" | "createdAt";
+  sortBy?: "name" | "category" | "supplierId" | "model" | "createdAt";
   sortOrder?: "asc" | "desc";
 }
 

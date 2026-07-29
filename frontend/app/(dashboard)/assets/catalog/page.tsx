@@ -115,7 +115,7 @@ export default function EquipmentCatalogPage() {
       category: data.category,
       unit: data.unit,
       description: data.description ?? null,
-      manufacturer: data.manufacturer ?? null,
+      supplierId: data.supplierId ?? null,
       model: data.model ?? null,
       specifications: data.specifications ?? null,
       expectedLifeYears: data.expectedLifeYears ?? null,
@@ -172,7 +172,7 @@ export default function EquipmentCatalogPage() {
           </span>
           <input
             type="text"
-            placeholder="Search specs register by name, model, manufacturer..."
+            placeholder="Search specs register by name, model, supplier..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-9 pr-3 py-2 border border-[#E6E8E6] dark:border-[#22352B] rounded-[10px] bg-[#F5F5F2] dark:bg-[#0B120E] text-xs placeholder-muted-foreground/60 transition-all focus:outline-none focus:border-[#2F4F3A] focus:ring-1 focus:ring-[#2F4F3A]"
@@ -254,7 +254,7 @@ export default function EquipmentCatalogPage() {
                       {eq.name}
                     </h3>
                     <p className="text-[10px] text-muted-foreground mt-0.5 font-bold">
-                      {eq.manufacturer || "N/A"} • {eq.model || "N/A"}
+                      {eq.supplier?.name || "No Supplier"} • {eq.model || "N/A"}
                     </p>
                   </div>
                   <div className="h-9 w-9 rounded-[8px] bg-[#F5F5F2] dark:bg-[#1A2820] border border-[#E6E8E6] dark:border-[#22352B] flex items-center justify-center shrink-0">

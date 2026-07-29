@@ -365,6 +365,7 @@ export default function EquipmentAssetsPage() {
             onClose={() => setIsAssignOpen(false)}
             onConfirm={handleAssign}
             personnel={personnelOptions}
+            fixedAssetId={selectedAsset.id}
             assetName={`${getEquipmentName(selectedAsset.equipmentId)} (${selectedAsset.serialNumber})`}
             isLoading={assignAssetMutation.isPending}
           />
@@ -392,6 +393,7 @@ export default function EquipmentAssetsPage() {
             isOpen={isInspectionOpen}
             onClose={() => setIsInspectionOpen(false)}
             onConfirm={handleInspectionMock}
+            fixedAssetId={selectedAsset.id}
             assetName={`${getEquipmentName(selectedAsset.equipmentId)} (${selectedAsset.serialNumber})`}
             isLoading={logInspectionMutation.isPending}
           />

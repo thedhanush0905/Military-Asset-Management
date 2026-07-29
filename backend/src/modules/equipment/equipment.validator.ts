@@ -10,7 +10,7 @@ const createEquipmentSchema = zod.object({
   category: zod.enum(categoryValues as any, { message: "Invalid category" }),
   unit: zod.enum(unitValues as any, { message: "Invalid unit" }),
   description: zod.string().trim().max(1000).optional().nullable(),
-  manufacturer: zod.string().trim().max(100).optional().nullable(),
+  supplierId: zod.string().trim().optional().nullable(),
   model: zod.string().trim().max(100).optional().nullable(),
   specifications: zod.string().trim().max(2000).optional().nullable(),
   expectedLifeYears: zod.number().int().positive("Expected life years must be positive").optional().nullable(),
@@ -21,7 +21,7 @@ const updateEquipmentSchema = zod.object({
   category: zod.enum(categoryValues as any).optional(),
   unit: zod.enum(unitValues as any).optional(),
   description: zod.string().trim().max(1000).optional().nullable(),
-  manufacturer: zod.string().trim().max(100).optional().nullable(),
+  supplierId: zod.string().trim().optional().nullable(),
   model: zod.string().trim().max(100).optional().nullable(),
   specifications: zod.string().trim().max(2000).optional().nullable(),
   expectedLifeYears: zod.number().int().positive().optional().nullable(),
@@ -32,7 +32,7 @@ const listQuerySchema = zod.object({
   limit: zod.coerce.number().int().positive().max(100).default(10),
   search: zod.string().optional(),
   category: zod.enum(categoryValues as any).optional(),
-  sortBy: zod.enum(["name", "category", "manufacturer", "model", "createdAt"] as any).optional().default("createdAt"),
+  sortBy: zod.enum(["name", "category", "supplierId", "model", "createdAt"] as any).optional().default("createdAt"),
   sortOrder: zod.enum(["asc", "desc"] as any).optional().default("desc"),
 });
 

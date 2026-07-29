@@ -185,7 +185,8 @@ model Equipment {
   category          EquipmentCategory
   unit              Unit
   description       String?
-  manufacturer      String?
+  supplierId        String?
+  supplier          Supplier?         @relation(fields: [supplierId], references: [id])
   model             String?
   specifications    String?
   expectedLifeYears Int?
@@ -202,6 +203,7 @@ model Equipment {
 
   @@index([category])
   @@index([isActive])
+  @@index([supplierId])
 }
 
 model EquipmentAsset {
@@ -775,6 +777,7 @@ model Supplier {
   isActive     Boolean        @default(true)
   procurements Procurement[]
   warranties   Warranty[]
+  equipments   Equipment[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 

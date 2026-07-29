@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { baseService } from "@/services/base.service";
 import { BaseDialog, BaseFormValues } from "@/components/ui/dialogs/BaseDialog";
-import { ProgressChart } from "@/components/ui/charts/ProgressChart";
 import { MapPin, CheckCircle, PlusCircle, Edit2, ShieldAlert, Search, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -109,11 +108,6 @@ export default function BasesPage() {
     }
   };
 
-  // Derive static readiness cleanly using base name hashes to keep the progress bar active
-  const getReadinessScore = (code: string) => {
-    const sum = code.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return (sum % 11) + 89;
-  };
 
   const isMutationLoading = createBaseMutation.isPending || updateBaseMutation.isPending;
 
@@ -185,7 +179,6 @@ export default function BasesPage() {
         /* Grid of Bases cards */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {bases.map((base) => {
-            const readiness = getReadinessScore(base.code);
             const inventoriesCount = base._count?.inventories || 0;
             return (
               <div 
@@ -221,10 +214,7 @@ export default function BasesPage() {
                       {inventoriesCount} items
                     </span>
                   </div>
-                  
-                  <div>
-                    <ProgressChart value={readiness} label="Readiness Status" subLabel={`${readiness}%`} />
-                  </div>
+
                 </div>
 
                 <div className="flex justify-between items-center text-[10px] text-muted-foreground">
@@ -259,14 +249,6 @@ export default function BasesPage() {
                         </Button>
                       </>
                     )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toast("Tactical Logs", `Redirecting to visual satellite logs for ${base.name}...`, "info")}
-                      className="border-[#E6E8E6] text-[9px] font-bold tracking-wider uppercase rounded-[8px]"
-                    >
-                      Ledger
-                    </Button>
                   </div>
                 </div>
               </div>

@@ -12,8 +12,6 @@ import { authService } from "@/services/auth.service";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { LOGIN_PRESETS } from "@/config/login-presets";
-import { cn } from "@/utils/cn";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Username or email is required"),
@@ -101,11 +99,6 @@ export default function LoginPage() {
     performLogin(data.email, data.password, false);
   };
 
-  const handleQuickAccess = (emailPreset: string, passwordPreset: string) => {
-    setValue("email", emailPreset);
-    setValue("password", passwordPreset);
-    setFocus("password");
-  };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#F5F5F2] dark:bg-[#0B120E]">
@@ -209,35 +202,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Quick Access presets */}
-          {(process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_ENABLE_LOGIN_PRESETS === "true") && (
-            <div className="mt-8 pt-6 border-t border-[#E6E8E6] dark:border-[#22352B]">
-              <span className="text-[11px] font-semibold text-muted-foreground tracking-[0.12em] uppercase block mb-3">
-                HQ Preset Security Badges
-              </span>
-              <div className="flex flex-col gap-2">
-                {LOGIN_PRESETS.map((preset) => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => handleQuickAccess(preset.email, preset.password)}
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-between px-3 py-2 text-left rounded-[8px] border border-[#E6E8E6] dark:border-[#22352B] bg-[#F5F5F2]/50 hover:bg-[#EFF1EF] transition-all text-xs font-medium text-[#1A2820] dark:text-[#F5F5F2]"
-                  >
-                    <span>{preset.roleLabel}</span>
-                    <span className={cn(
-                      "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase",
-                      preset.classification === "Command" && "text-info bg-info/10",
-                      preset.classification === "Logistics" && "text-[#2F4F3A] bg-[#EFF1EF]",
-                      preset.classification === "Admin" && "text-destructive bg-destructive/10"
-                    )}>
-                      {preset.classification}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
         </div>
       </div>

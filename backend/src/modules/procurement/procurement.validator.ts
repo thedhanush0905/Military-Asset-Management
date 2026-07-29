@@ -12,7 +12,7 @@ const createItemSchema = zod.object({
 
 const createProcurementSchema = zod.object({
   procurementNumber: zod.string().trim().min(3, "Procurement number must be at least 3 characters").max(50),
-  supplier: zod.string().trim().min(2, "Supplier must be at least 2 characters").max(100),
+  supplierId: zod.string().cuid("Invalid supplier ID"),
   purchaseDate: zod.string().datetime().transform((val) => new Date(val)),
   expectedDeliveryDate: zod.string().datetime().transform((val) => new Date(val)),
   baseId: zod.string().cuid("Invalid destination base ID"),

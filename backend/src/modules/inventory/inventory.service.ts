@@ -89,9 +89,11 @@ class InventoryService {
         },
         {
           equipment: {
-            manufacturer: {
-              contains: search,
-              mode: "insensitive",
+            supplier: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
             },
           },
         },

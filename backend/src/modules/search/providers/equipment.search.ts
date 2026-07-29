@@ -11,9 +11,12 @@ class EquipmentSearchProvider implements SearchTypes.ISearchProvider {
         OR: [
           { name: { contains: query, mode: "insensitive" } },
           { model: { contains: query, mode: "insensitive" } },
-          { manufacturer: { contains: query, mode: "insensitive" } },
+          { supplier: { name: { contains: query, mode: "insensitive" } } },
         ],
         isActive: true,
+      },
+      include: {
+        supplier: true,
       },
       take: limit,
     });
@@ -22,7 +25,7 @@ class EquipmentSearchProvider implements SearchTypes.ISearchProvider {
       id: eq.id,
       type: "EQUIPMENT",
       title: eq.name,
-      subtitle: `${eq.model || "N/A"} - ${eq.manufacturer || "N/A"}`,
+      subtitle: `${eq.model || "N/A"} - ${(eq as any).supplier?.name || "N/A"}`,
       status: eq.isActive ? "ACTIVE" : "INACTIVE",
       url: `/equipment/${eq.id}`,
     }));

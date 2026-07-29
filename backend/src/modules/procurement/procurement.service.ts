@@ -114,9 +114,17 @@ class ProcurementService {
       });
     }
 
+    const supplierRecord = await prisma.supplier.findFirst({
+      where: { id: data.supplierId, isActive: true },
+    });
+    if (!supplierRecord) {
+      throw new NotFoundError(`Supplier with ID '${data.supplierId}' not found or inactive`);
+    }
+
     const created = await this.procurementRepository.create({
       procurementNumber: data.procurementNumber.trim(),
-      supplier: data.supplier.trim(),
+      supplier: supplierRecord.name,
+      supplierId: supplierRecord.id,
       status: "DRAFT",
       purchaseDate: new Date(data.purchaseDate),
       expectedDeliveryDate: new Date(data.expectedDeliveryDate),

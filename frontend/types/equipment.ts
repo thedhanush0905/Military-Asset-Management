@@ -5,7 +5,8 @@ export interface Equipment extends BaseEntity {
   category: EquipmentCategory;
   unit: Unit;
   description: string | null;
-  manufacturer: string | null;
+  supplierId: string | null;
+  supplier?: { id: string; name: string } | null;
   model: string | null;
   specifications: string | null;
   expectedLifeYears: number | null;
