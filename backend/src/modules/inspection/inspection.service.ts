@@ -123,8 +123,8 @@ class InspectionService {
   }
 
   public async getInspections(currentUser: prismaClientModule.User, query: any) {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const page = Number(query.page ?? 1);
+    const limit = Number(query.limit ?? 10);
 
     const where: prismaClientModule.Prisma.InspectionWhereInput = {};
 

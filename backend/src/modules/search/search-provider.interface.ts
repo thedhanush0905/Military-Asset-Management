@@ -1,7 +1,7 @@
 namespace SearchProviderTypes {
   export interface SearchResultDTO {
     id: string;
-    type: "EQUIPMENT" | "ASSET" | "USER" | "BASE" | "ASSIGNMENT" | "TRANSFER" | "MAINTENANCE" | "PROCUREMENT" | "DISPOSAL" | "AUDIT_LOG";
+    type: "EQUIPMENT" | "ASSET" | "USER" | "BASE" | "ASSIGNMENT" | "TRANSFER" | "MAINTENANCE" | "PROCUREMENT" | "DISPOSAL" | "AUDIT_LOG" | "SUPPLIER" | "INSPECTION";
     title: string;
     subtitle: string;
     status: string;

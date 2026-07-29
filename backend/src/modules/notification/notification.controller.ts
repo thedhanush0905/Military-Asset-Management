@@ -128,6 +128,30 @@ class NotificationController {
       next(error);
     }
   };
+
+  public deleteAllNotifications = async (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ): Promise<void> => {
+    try {
+      const currentUser = req.user;
+      if (!currentUser) {
+        res.status(HttpStatus.UNAUTHORIZED).json({ success: false, message: "Unauthorized" });
+        return;
+      }
+
+      const result = await this.notificationService.deleteAllNotifications(currentUser);
+      apiResponse.successResponse({
+        res,
+        statusCode: HttpStatus.OK,
+        message: "All notifications deleted successfully",
+        data: { count: result.count },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export = NotificationController;

@@ -11,8 +11,8 @@ class NotificationService {
   }
 
   public async getNotifications(currentUser: prismaClientModule.User, query: any) {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const page = Number(query.page ?? 1);
+    const limit = Number(query.limit ?? 10);
     const now = new Date();
 
     const where: prismaClientModule.Prisma.NotificationWhereInput = {
@@ -142,6 +142,13 @@ class NotificationService {
 
     const deleted = await this.notificationRepository.delete(id);
     return deleted;
+  }
+
+  public async deleteAllNotifications(currentUser: prismaClientModule.User) {
+    const result = await this.notificationRepository.deleteMany({
+      userId: currentUser.id,
+    });
+    return result;
   }
 }
 

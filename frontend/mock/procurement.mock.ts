@@ -1,0 +1,56 @@
+import { Procurement } from "@/types/procurement";
+
+export const mockProcurements: Procurement[] = [
+  {
+    id: "proc-1",
+    procurementNumber: "RFQ-2026-0892",
+    supplier: "Harris Corporation",
+    supplierId: "sup-harris",
+    status: "APPROVED",
+    purchaseDate: "2026-07-28T07:58:00Z",
+    expectedDeliveryDate: "2026-08-15T00:00:00Z",
+    receivedDate: null,
+    totalCost: 432000,
+    remarks: "24× AN/PRC-152A radios for tactical team replacement.",
+    baseId: "b-1",
+    createdById: "u-admin",
+    createdAt: "2026-07-28T07:58:00Z",
+    updatedAt: "2026-07-28T07:58:00Z",
+    items: [
+      {
+        id: "pi-1",
+        procurementId: "proc-1",
+        equipmentId: "eq-sincgars",
+        quantity: 24,
+        receivedQuantity: 0,
+        unitCost: 18000,
+      },
+    ],
+  },
+  {
+    id: "proc-2",
+    procurementNumber: "RFQ-2026-0411",
+    supplier: "AM General",
+    supplierId: "sup-amgen",
+    status: "RECEIVED",
+    purchaseDate: "2026-05-10T00:00:00Z",
+    expectedDeliveryDate: "2026-06-15T00:00:00Z",
+    receivedDate: "2026-06-14T11:00:00Z",
+    totalCost: 1100000,
+    remarks: "Initial procurement of 5 HMMWV M1151 units.",
+    baseId: "b-3",
+    createdById: "u-admin",
+    createdAt: "2026-05-10T00:00:00Z",
+    updatedAt: "2026-06-14T11:00:00Z",
+    items: [
+      {
+        id: "pi-2",
+        procurementId: "proc-2",
+        equipmentId: "eq-hmmwv",
+        quantity: 5,
+        receivedQuantity: 5,
+        unitCost: 220000,
+      },
+    ],
+  },
+];

@@ -9,7 +9,7 @@ const searchSchema = zod.object({
 
 const validateSearch = (
   req: express.Request,
-  _res: express.Response,
+  res: express.Response,
   next: express.NextFunction
 ): void => {
   const result = searchSchema.safeParse(req.query);
@@ -18,7 +18,7 @@ const validateSearch = (
     next(new ValidationError("Validation Error", errorDetails));
     return;
   }
-  req.query = result.data as any;
+  res.locals.searchQuery = result.data;
   next();
 };
 

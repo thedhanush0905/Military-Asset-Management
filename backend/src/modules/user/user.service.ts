@@ -125,8 +125,8 @@ class UserService {
     currentUser: prismaClientModule.User,
     queryParams: any
   ): Promise<PaginatedUsers> {
-    const page = queryParams.page ?? 1;
-    const limit = queryParams.limit ?? 10;
+    const page = Number(queryParams.page ?? 1);
+    const limit = Number(queryParams.limit ?? 10);
     
     let baseCommanderFilter: string | undefined;
 

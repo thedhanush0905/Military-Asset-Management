@@ -15,8 +15,8 @@ class AuditLogService {
       throw new ForbiddenError("Access Denied: Only administrators can view audit logs");
     }
 
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const page = Number(query.page ?? 1);
+    const limit = Number(query.limit ?? 10);
 
     const where: prismaClientModule.Prisma.AuditLogWhereInput = {};
 

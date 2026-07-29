@@ -46,75 +46,85 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Status Colors theme mappings */
+  --color-status-available: var(--status-available);
+  --color-status-assigned: var(--status-assigned);
+  --color-status-maintenance: var(--status-maintenance);
+  --color-status-transfer: var(--status-transfer);
+  --color-status-disposed: var(--status-disposed);
+  --color-status-critical: var(--status-critical);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #F5F5F2; /* Canvas color */
+  --foreground: #111B15; /* Sleek dark-military black/green */
+  --card: #FFFFFF;
+  --card-foreground: #111B15;
+  --popover: #FFFFFF;
+  --popover-foreground: #111B15;
+  --primary: #2F4F3A; /* Primary military green */
+  --primary-foreground: #FFFFFF;
+  --secondary: #E6E8E6; /* Light gray border/bg */
+  --secondary-foreground: #2F4F3A;
+  --muted: #EFF1EF;
+  --muted-foreground: #556B2F;
+  --accent: #556B2F; /* Accent olive green */
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626; /* Danger red */
+  --destructive-foreground: #FFFFFF;
+  --border: #E6E8E6;
+  --input: #E6E8E6;
+  --ring: #2F4F3A;
+  --radius: 0.625rem; /* 10px */
+
+  --sidebar: #1A2820; /* Sidebar dark military */
+  --sidebar-foreground: #E6E8E6;
+  --sidebar-primary: #2F4F3A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #556B2F;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #22352B;
+  --sidebar-ring: #556B2F;
+
+  /* Custom status colors variables */
+  --status-available: #2E7D32;
+  --status-assigned: #2563EB;
+  --status-maintenance: #F59E0B;
+  --status-transfer: #7C3AED;
+  --status-disposed: #6B7280;
+  --status-critical: #DC2626;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0B120E; /* Deep military black */
+  --foreground: #F5F5F2;
+  --card: #111B15; /* Dark military green card background */
+  --card-foreground: #F5F5F2;
+  --popover: #111B15;
+  --popover-foreground: #F5F5F2;
+  --primary: #4F7F60; /* Lighter military green for readability */
+  --primary-foreground: #0B120E;
+  --secondary: #22352B;
+  --secondary-foreground: #F5F5F2;
+  --muted: #1A2820;
+  --muted-foreground: #A4B29E;
+  --accent: #7A935D;
+  --accent-foreground: #0B120E;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #22352B;
+  --input: #22352B;
+  --ring: #4F7F60;
+
+  --sidebar: #060A08; /* Deeper sidebar in dark mode */
+  --sidebar-foreground: #F5F5F2;
+  --sidebar-primary: #4F7F60;
+  --sidebar-primary-foreground: #0B120E;
+  --sidebar-accent: #7A935D;
+  --sidebar-accent-foreground: #0B120E;
+  --sidebar-border: #111B15;
+  --sidebar-ring: #7A935D;
 }
 
 @layer base {
@@ -127,4 +137,159 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Premium Custom Scrollbars */
+.scrollbar-premium {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(85, 107, 47, 0.2) transparent;
+  transition: scrollbar-color 0.2s ease-in-out;
+}
+.scrollbar-premium:hover {
+  scrollbar-color: rgba(85, 107, 47, 0.5) transparent;
+}
+
+/* Webkit browser scrollbars styling */
+.scrollbar-premium::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-premium::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-premium::-webkit-scrollbar-thumb {
+  background: rgba(85, 107, 47, 0.0);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease-in-out;
+}
+.scrollbar-premium:hover::-webkit-scrollbar-thumb {
+  background: rgba(85, 107, 47, 0.25);
+}
+.scrollbar-premium::-webkit-scrollbar-thumb:hover {
+  background: rgba(85, 107, 47, 0.5);
+}
+
+/* Standardized micro-interaction transitions */
+@utility transition-premium {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 180ms;
+}
+
+/* Premium Card elevations and micro scale-up */
+@utility card-premium {
+  @apply bg-card text-card-foreground border border-border rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.02),0_1px_2px_rgba(0,0,0,0.04)] transition-premium;
+}
+@utility card-premium-hover {
+  &:hover {
+    @apply border-primary/45 shadow-[0_4px_12px_rgba(26,40,32,0.04),0_2px_4px_rgba(26,40,32,0.02)] scale-[1.005];
+  }
+}
+
+/* Standardized focus rings for accessibility */
+.focus-ring-premium:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Global Table Refinements */
+table.w-full.text-left.border-collapse.text-xs {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+table.w-full.text-left.border-collapse.text-xs thead tr {
+  border-bottom: 1px solid var(--border);
+  background-color: rgba(245, 245, 242, 0.45);
+}
+.dark table.w-full.text-left.border-collapse.text-xs thead tr {
+  background-color: rgba(11, 18, 14, 0.25);
+}
+
+table.w-full.text-left.border-collapse.text-xs th {
+  padding: 0.75rem 1rem !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted-foreground);
+  opacity: 0.85;
+}
+
+table.w-full.text-left.border-collapse.text-xs tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+table.w-full.text-left.border-collapse.text-xs tbody tr:hover {
+  background-color: rgba(239, 241, 239, 0.45) !important;
+}
+.dark table.w-full.text-left.border-collapse.text-xs tbody tr:hover {
+  background-color: rgba(26, 40, 32, 0.35) !important;
+}
+
+table.w-full.text-left.border-collapse.text-xs td {
+  padding: 0.875rem 1rem !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  vertical-align: middle;
+}
+
+/* Centralized Typography Scale and Weights utilities */
+@utility text-display-heading {
+  font-size: 36px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+@utility text-page-title {
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+@utility text-section-title {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+}
+
+@utility text-card-title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+@utility text-nav-item {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+@utility text-body-text {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+}
+
+@utility text-metadata {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+}
+
+@utility text-small-label {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+@utility text-caption {
+  font-size: 10px !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
 }

@@ -76,7 +76,7 @@ app.use("/notifications", notificationRoutes);
 app.use("/system-configs", systemConfigRoutes);
 app.use("/suppliers", supplierRoutes);
 app.use("/personnel", personnelRoutes);
-app.use("/org-units", organizationUnitRoutes);
+app.use("/organization-unit", organizationUnitRoutes);
 app.use("/attachments", attachmentRoutes);
 app.use("/warranties", warrantyRoutes);
 app.use("/inspections", inspectionRoutes);

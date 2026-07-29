@@ -22,8 +22,9 @@ class GlobalSearchController {
         return;
       }
 
-      const query = req.query["q"] as string;
-      const limit = req.query["limit"] ? Number(req.query["limit"]) : undefined;
+      const validated = res.locals.searchQuery || {};
+      const query = (validated.q || req.query["q"]) as string;
+      const limit = validated.limit !== undefined ? Number(validated.limit) : (req.query["limit"] ? Number(req.query["limit"]) : undefined);
 
       const results = await this.searchService.search(currentUser, query, limit);
 

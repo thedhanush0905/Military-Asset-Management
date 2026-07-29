@@ -20,6 +20,7 @@ class InventoryService {
       quantity: inv.quantity,
       availableQuantity: inv.availableQuantity,
       allocatedQuantity: inv.allocatedQuantity,
+      inTransitQuantity: inv.inTransitQuantity,
       maintenanceQuantity: inv.maintenanceQuantity,
       damagedQuantity: inv.damagedQuantity,
       minimumStock: inv.minimumStock,
@@ -60,8 +61,8 @@ class InventoryService {
     currentUser: prismaClientModule.User,
     queryParams: any
   ): Promise<inventoryTypes.PaginatedInventory> {
-    const page = queryParams.page ?? 1;
-    const limit = queryParams.limit ?? 10;
+    const page = Number(queryParams.page ?? 1);
+    const limit = Number(queryParams.limit ?? 10);
     const sortBy = queryParams.sortBy ?? "createdAt";
     const sortOrder = queryParams.sortOrder ?? "desc";
     const search = queryParams.search ? queryParams.search.trim() : undefined;

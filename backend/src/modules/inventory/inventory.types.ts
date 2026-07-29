@@ -7,6 +7,7 @@ export interface InventoryResponse {
   quantity: number;
   availableQuantity: number;
   allocatedQuantity: number;
+  inTransitQuantity: number;
   maintenanceQuantity: number;
   damagedQuantity: number;
   minimumStock: number;

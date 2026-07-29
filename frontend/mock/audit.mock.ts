@@ -1,0 +1,66 @@
+import { AuditLog } from "@/types/audit";
+
+export const mockAuditLogs: AuditLog[] = [
+  {
+    id: "aud-1",
+    userId: "u-admin",
+    performedByType: "USER",
+    module: "ASSIGNMENT",
+    action: "CREATE",
+    entityType: "Assignment",
+    entityId: "asg-1",
+    result: "SUCCESS",
+    oldValues: null,
+    newValues: {
+      equipmentAssetId: "A-0001",
+      assignedTo: "1st Armored Division",
+      personnelId: "p-5",
+      status: "ACTIVE",
+    },
+    ipAddress: "10.240.10.42",
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+    createdAt: "2026-07-28T09:14:00Z",
+    updatedAt: "2026-07-28T09:14:00Z",
+  },
+  {
+    id: "aud-2",
+    userId: "u-admin",
+    performedByType: "USER",
+    module: "TRANSFER",
+    action: "UPDATE",
+    entityType: "Transfer",
+    entityId: "trn-1",
+    result: "SUCCESS",
+    oldValues: {
+      status: "PENDING",
+    },
+    newValues: {
+      status: "APPROVED",
+    },
+    ipAddress: "10.240.10.42",
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+    createdAt: "2026-07-28T08:52:00Z",
+    updatedAt: "2026-07-28T08:52:00Z",
+  },
+  {
+    id: "aud-3",
+    userId: "u-admin",
+    performedByType: "USER",
+    module: "MAINTENANCE",
+    action: "UPDATE",
+    entityType: "Maintenance",
+    entityId: "maint-1",
+    result: "SUCCESS",
+    oldValues: {
+      status: "SCHEDULED",
+    },
+    newValues: {
+      status: "IN_PROGRESS",
+      startedAt: "2026-07-28T08:30:00Z",
+    },
+    ipAddress: "10.240.10.42",
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+    createdAt: "2026-07-28T08:31:00Z",
+    updatedAt: "2026-07-28T08:31:00Z",
+  },
+];

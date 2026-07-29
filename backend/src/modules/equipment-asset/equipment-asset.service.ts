@@ -7,6 +7,7 @@ import ForbiddenError = require("../../shared/errors/ForbiddenError.js");
 import ConflictError = require("../../shared/errors/ConflictError.js");
 import type equipmentAssetTypes = require("./equipment-asset.types.js");
 import syncInventory = require("../../shared/utils/inventorySync.js");
+import AuditService = require("../../shared/services/audit.service.js");
 
 class EquipmentAssetService {
   private readonly assetRepository: EquipmentAssetRepository;
@@ -96,7 +97,17 @@ class EquipmentAssetService {
     // Fetch complete record with relations
     const completedRecord = await this.assetRepository.findById(created.id);
 
-    // TODO: Trigger Audit Log hook here (auditLogService.logAction(...))
+    if (completedRecord) {
+      await AuditService.logAction({
+        userId: currentUser.id,
+        performedByType: "USER",
+        module: "ASSET",
+        action: "ASSET_CREATE",
+        entityType: "EquipmentAsset",
+        entityId: completedRecord.id,
+        newValues: { serialNumber: completedRecord.serialNumber, status: completedRecord.status, condition: completedRecord.condition, baseId: completedRecord.baseId },
+      });
+    }
 
     return this.sanitizeAsset(completedRecord);
   }
@@ -105,8 +116,8 @@ class EquipmentAssetService {
     currentUser: prismaClientModule.User,
     queryParams: any
   ): Promise<equipmentAssetTypes.PaginatedEquipmentAsset> {
-    const page = queryParams.page ?? 1;
-    const limit = queryParams.limit ?? 10;
+    const page = Number(queryParams.page ?? 1);
+    const limit = Number(queryParams.limit ?? 10);
     const sortBy = queryParams.sortBy ?? "createdAt";
     const sortOrder = queryParams.sortOrder ?? "desc";
     const search = queryParams.search ? queryParams.search.trim() : undefined;
@@ -264,7 +275,18 @@ class EquipmentAssetService {
     // Fetch populated record
     const completedRecord = await this.assetRepository.findById(updated.id);
 
-    // TODO: Trigger Audit Log hook here (auditLogService.logAction(...))
+    if (completedRecord) {
+      await AuditService.logAction({
+        userId: currentUser.id,
+        performedByType: "USER",
+        module: "ASSET",
+        action: "ASSET_UPDATE",
+        entityType: "EquipmentAsset",
+        entityId: completedRecord.id,
+        oldValues: { serialNumber: target.serialNumber, status: target.status, condition: target.condition, baseId: target.baseId },
+        newValues: { serialNumber: completedRecord.serialNumber, status: completedRecord.status, condition: completedRecord.condition, baseId: completedRecord.baseId },
+      });
+    }
 
     return this.sanitizeAsset(completedRecord);
   }
@@ -311,7 +333,17 @@ class EquipmentAssetService {
     // Fetch complete populated record
     const completedRecord = await this.assetRepository.findById(deleted.id, true);
 
-    // TODO: Trigger Audit Log hook here (auditLogService.logAction(...))
+    if (completedRecord) {
+      await AuditService.logAction({
+        userId: currentUser.id,
+        performedByType: "USER",
+        module: "ASSET",
+        action: "ASSET_DELETE",
+        entityType: "EquipmentAsset",
+        entityId: completedRecord.id,
+        oldValues: { serialNumber: target.serialNumber, status: target.status, condition: target.condition, baseId: target.baseId },
+      });
+    }
 
     return this.sanitizeAsset(completedRecord);
   }

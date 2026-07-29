@@ -83,8 +83,8 @@ class EquipmentService {
     currentUser: prismaClientModule.User,
     queryParams: any
   ): Promise<equipmentTypes.PaginatedEquipment> {
-    const page = queryParams.page ?? 1;
-    const limit = queryParams.limit ?? 10;
+    const page = Number(queryParams.page ?? 1);
+    const limit = Number(queryParams.limit ?? 10);
     const sortBy = queryParams.sortBy ?? "createdAt";
     const sortOrder = queryParams.sortOrder ?? "desc";
     const search = queryParams.search ? queryParams.search.trim() : undefined;
@@ -186,7 +186,16 @@ class EquipmentService {
 
     const updated = await this.equipmentRepository.update(id, updatePayload);
 
-    // TODO: Trigger Audit Log hook here (auditLogService.logAction(...))
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "EQUIPMENT",
+      action: "EQUIPMENT_UPDATE",
+      entityType: "Equipment",
+      entityId: updated.id,
+      oldValues: { name: target.name, category: target.category, unit: target.unit, manufacturer: target.manufacturer, model: target.model },
+      newValues: { name: updated.name, category: updated.category, unit: updated.unit, manufacturer: updated.manufacturer, model: updated.model },
+    });
 
     return this.sanitizeEquipment(updated);
   }
@@ -207,7 +216,15 @@ class EquipmentService {
 
     const deleted = await this.equipmentRepository.softDelete(id);
 
-    // TODO: Trigger Audit Log hook here (auditLogService.logAction(...))
+    await AuditService.logAction({
+      userId: currentUser.id,
+      performedByType: "USER",
+      module: "EQUIPMENT",
+      action: "EQUIPMENT_DELETE",
+      entityType: "Equipment",
+      entityId: deleted.id,
+      oldValues: { name: target.name, category: target.category, unit: target.unit, manufacturer: target.manufacturer, model: target.model },
+    });
 
     return this.sanitizeEquipment(deleted);
   }

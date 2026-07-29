@@ -368,8 +368,8 @@ class MaintenanceService {
     currentUser: prismaClientModule.User,
     queryParams: any
   ): Promise<maintenanceTypes.PaginatedMaintenance> {
-    const page = queryParams.page ?? 1;
-    const limit = queryParams.limit ?? 10;
+    const page = Number(queryParams.page ?? 1);
+    const limit = Number(queryParams.limit ?? 10);
     const sortBy = queryParams.sortBy ?? "createdAt";
     const sortOrder = queryParams.sortOrder ?? "desc";
     const search = queryParams.search ? queryParams.search.trim() : undefined;

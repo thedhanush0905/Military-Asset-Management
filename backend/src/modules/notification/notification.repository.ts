@@ -54,6 +54,14 @@ class NotificationRepository {
       where: { id },
     });
   }
+
+  public async deleteMany(
+    where: prismaClientModule.Prisma.NotificationWhereInput
+  ): Promise<prismaClientModule.Prisma.BatchPayload> {
+    return prisma.notification.deleteMany({
+      where,
+    });
+  }
 }
 
 export = NotificationRepository;

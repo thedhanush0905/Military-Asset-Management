@@ -1,0 +1,4 @@
+export const SIDEBAR_CONSTANTS = {
+  WIDTH_EXPANDED: "260px",
+  WIDTH_COLLAPSED: "70px",
+};

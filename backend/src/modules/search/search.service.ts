@@ -9,6 +9,8 @@ import MaintenanceSearchProvider = require("./providers/maintenance.search.js");
 import ProcurementSearchProvider = require("./providers/procurement.search.js");
 import DisposalSearchProvider = require("./providers/disposal.search.js");
 import AuditLogSearchProvider = require("./providers/audit-log.search.js");
+import SupplierSearchProvider = require("./providers/supplier.search.js");
+import InspectionSearchProvider = require("./providers/inspection.search.js");
 import prismaClientModule = require("../../../generated/prisma/index.js");
 
 class GlobalSearchService {
@@ -25,6 +27,8 @@ class GlobalSearchService {
     this.providers.push(new ProcurementSearchProvider());
     this.providers.push(new DisposalSearchProvider());
     this.providers.push(new AuditLogSearchProvider());
+    this.providers.push(new SupplierSearchProvider());
+    this.providers.push(new InspectionSearchProvider());
   }
 
   public async search(

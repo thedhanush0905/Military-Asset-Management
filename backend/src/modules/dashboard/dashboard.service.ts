@@ -32,15 +32,9 @@ class DashboardService {
       prisma.equipmentAsset.count({ where: { ...baseFilter, status: "MAINTENANCE", isActive: true } }),
       prisma.equipmentAsset.count({ where: { ...baseFilter, status: "RETIRED" } }),
       prisma.base.count({ where: { isActive: true, ...(targetBaseId ? { id: targetBaseId } : {}) } }),
-      // Exclude user stats for LOGISTICS_OFFICER
       currentUser.role === "LOGISTICS_OFFICER"
         ? Promise.resolve(null)
-        : prisma.user.count({
-            where: {
-              status: "ACTIVE",
-              ...(targetBaseId ? { baseId: targetBaseId } : {}),
-            },
-          }),
+        : prisma.personnel.count(),
     ]);
 
     return {
@@ -65,7 +59,7 @@ class DashboardService {
 
     const assetCounts = await prisma.equipmentAsset.groupBy({
       by: ["baseId", "status"],
-      where: { baseId: { in: baseIds } },
+      where: { baseId: { in: baseIds }, isActive: true },
       _count: { _all: true },
     });
 
@@ -90,7 +84,9 @@ class DashboardService {
 
   public async getEquipmentSummary(currentUser: prismaClientModule.User, query: any) {
     const targetBaseId = this.enforceBaseScoping(currentUser, query.baseId);
-    const { page = 1, limit = 10, search, equipmentId } = query;
+    const page = Number(query.page ?? 1);
+    const limit = Number(query.limit ?? 10);
+    const { search, equipmentId } = query;
 
     const where: any = { isActive: true };
     if (search) {
@@ -120,6 +116,7 @@ class DashboardService {
       by: ["equipmentId", "status"],
       where: {
         equipmentId: { in: eqIds },
+        isActive: true,
         ...(targetBaseId ? { baseId: targetBaseId } : {}),
       },
       _count: { _all: true },
@@ -414,8 +411,8 @@ class DashboardService {
 
   public async getRecentActivities(currentUser: prismaClientModule.User, query: any) {
     const targetBaseId = this.enforceBaseScoping(currentUser, query.baseId);
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const page = Number(query.page ?? 1);
+    const limit = Number(query.limit ?? 10);
 
     const baseFilter = targetBaseId ? { baseId: targetBaseId } : {};
 

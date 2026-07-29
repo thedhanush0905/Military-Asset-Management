@@ -32,6 +32,12 @@ router.patch(
 );
 
 router.delete(
+  "/",
+  authenticate,
+  controller.deleteAllNotifications
+);
+
+router.delete(
   "/:id",
   authenticate,
   controller.deleteNotification

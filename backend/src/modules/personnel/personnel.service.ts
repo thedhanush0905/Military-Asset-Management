@@ -129,8 +129,15 @@ class PersonnelService {
   }
 
   public async getPersonnelList(currentUser: prismaClientModule.User, query: any) {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    let page = Number(query.page ?? 1);
+    let limit = Number(query.limit ?? 10);
+
+    if (isNaN(page) || page <= 0) {
+      page = 1;
+    }
+    if (isNaN(limit) || limit <= 0) {
+      limit = 10;
+    }
 
     const where: prismaClientModule.Prisma.PersonnelWhereInput = {};
 
